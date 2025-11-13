@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Tutor - Sistema IPMC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .turmas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .turma-card {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .turma-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .turma-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .turma-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .turma-info p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .turma-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .action-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .user-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .estudantes-avaliacao {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .estudante-nota {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .estudante-nota:last-child {
+            border-bottom: none;
+        }
+
+        .estudante-nota label {
+            font-weight: 600;
+            color: #333;
+            min-width: 200px;
+        }
+
+        .estudante-nota input {
+            width: 120px;
+            padding: 0.5rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+        }
+
+        .avaliacoes-list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .avaliacao-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .avaliacao-item:last-child {
+            border-bottom: none;
+        }
+
+        .avaliacao-info h4 {
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+
+        .avaliacao-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .nota-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .nota-baixa {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .nota-media {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .nota-alta {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .estagios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .estagio-card {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .estagio-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .estagio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .estagio-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.ativo {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.concluido {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .estagio-info p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .quick-action-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 1rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .turma-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-mini {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-mini .number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-mini .label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Sistema IPMC - Tutor</h1>
+            </div>
+            <div class="header-right">
+                <span id="userWelcome">Bem-vindo, Tutor</span>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#minhas-turmas" class="nav-link" data-section="minhas-turmas">Minhas Turmas</a></li>
+                    <li><a href="#avaliacoes" class="nav-link" data-section="avaliacoes">Avaliações</a></li>
+                    <li><a href="#estagios" class="nav-link" data-section="estagios">Estágios</a></li>
+                    <li><a href="#meu-perfil" class="nav-link" data-section="meu-perfil">Meu Perfil</a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <h2>Dashboard do Tutor</h2>
+                    
+                    <!-- Ações Rápidas -->
+                    <div class="quick-actions">
+                        <div class="quick-action-card" onclick="tutorSystem.showSection('minhas-turmas')">
+                            <div>👥</div>
+                            <h3>Minhas Turmas</h3>
+                            <p>Ver turmas atribuídas</p>
+                        </div>
+                        <div class="quick-action-card" onclick="tutorSystem.showSection('avaliacoes')">
+                            <div>📝</div>
+                            <h3>Lançar Avaliação</h3>
+                            <p>Nova avaliação</p>
+                        </div>
+                        <div class="quick-action-card" onclick="tutorSystem.showSection('estagios')">
+                            <div>💼</div>
+                            <h3>Registrar Estágio</h3>
+                            <p>Novo estágio</p>
+                        </div>
+                        <div class="quick-action-card" onclick="tutorSystem.verAvaliacoesRecentes()">
+                            <div>📊</div>
+                            <h3>Avaliações Recentes</h3>
+                            <p>Últimas notas</p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Turmas Ativas</h3>
+                            <span id="turmasAtivas" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total de Estudantes</h3>
+                            <span id="totalEstudantes" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Avaliações Pendentes</h3>
+                            <span id="avaliacoesPendentes" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Estágios Ativos</h3>
+                            <span id="estagiosAtivos" class="stat-number">0</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-turmas">
+                        <h3>Minhas Turmas</h3>
+                        <div id="minhasTurmasList" class="turmas-grid">
+                            <!-- Turmas serão carregadas via JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="recent-activities">
+                        <h3>Últimas Avaliações Lançadas</h3>
+                        <div id="ultimasAvaliacoes" class="avaliacoes-list">
+                            <!-- Avaliações recentes serão carregadas aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Minhas Turmas Section -->
+                <section id="minhas-turmas" class="content-section">
+                    <h2>Minhas Turmas Atribuídas</h2>
+                    <div class="search-box">
+                        <input type="text" id="searchTurmas" placeholder="Pesquisar turmas..." onkeyup="tutorSystem.filtrarTurmas()">
+                    </div>
+                    <div id="turmasAtribuidasList" class="turmas-grid">
+                        <!-- Turmas serão carregadas via JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Avaliações Section -->
+                <section id="avaliacoes" class="content-section">
+                    <h2>Gestão de Avaliações</h2>
+                    
+                    <div class="user-form">
+                        <h3>Lançar Nova Avaliação</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="selectTurmaAvaliacao">Selecionar Turma *</label>
+                                <select id="selectTurmaAvaliacao" onchange="tutorSystem.carregarEstudantesParaAvaliacao()" required>
+                                    <option value="">Selecione uma turma</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="avaliacaoTipo">Tipo de Avaliação *</label>
+                                <select id="avaliacaoTipo" name="tipo" required>
+                                    <option value="Teste">Teste</option>
+                                    <option value="Trabalho">Trabalho Prático</option>
+                                    <option value="Projeto">Projeto</option>
+                                    <option value="Apresentacao">Apresentação</option>
+                                    <option value="Quiz">Quiz</option>
+                                    <option value="Exame">Exame</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="avaliacaoDisciplina">Disciplina *</label>
+                                <input type="text" id="avaliacaoDisciplina" name="disciplina" required placeholder="Ex: Matemática, Programação">
+                            </div>
+                            <div class="form-group">
+                                <label for="avaliacaoPeso">Peso (%) *</label>
+                                <input type="number" id="avaliacaoPeso" name="peso" min="1" max="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="avaliacaoData">Data da Avaliação *</label>
+                                <input type="date" id="avaliacaoData" name="data" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="avaliacaoDescricao">Descrição</label>
+                                <textarea id="avaliacaoDescricao" name="descricao" rows="2" placeholder="Descrição da avaliação..."></textarea>
+                            </div>
+                        </div>
+
+                        <div id="formAvaliacaoContainer" style="display: none;">
+                            <div class="estudantes-avaliacao">
+                                <h4>Notas dos Estudantes</h4>
+                                <div id="listaEstudantesAvaliacao">
+                                    <!-- Lista de estudantes será carregada aqui -->
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="tutorSystem.lancarAvaliacao()" class="submit-btn">📤 Lançar Avaliação</button>
+                        </div>
+                    </div>
+
+                    <div class="historico-avaliacoes">
+                        <h3>Histórico de Avaliações</h3>
+                        <div class="search-box">
+                            <input type="text" id="searchAvaliacoes" placeholder="Pesquisar avaliações..." onkeyup="tutorSystem.filtrarAvaliacoes()">
+                        </div>
+                        <div id="historicoAvaliacoes" class="avaliacoes-list">
+                            <!-- Histórico de avaliações será carregado aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Estágios Section -->
+                <section id="estagios" class="content-section">
+                    <h2>Gestão de Estágios</h2>
+                    
+                    <div class="user-form">
+                        <h3>Registrar Novo Estágio</h3>
+                        <form id="formEstagio">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="estagioEstudante">Estudante *</label>
+                                    <select id="estagioEstudante" name="estudanteId" required>
+                                        <option value="">Selecione o estudante</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioEmpresa">Empresa *</label>
+                                    <input type="text" id="estagioEmpresa" name="empresa" required placeholder="Nome da empresa">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioSupervisor">Supervisor *</label>
+                                    <input type="text" id="estagioSupervisor" name="supervisor" required placeholder="Nome do supervisor">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioContactoSupervisor">Contacto do Supervisor</label>
+                                    <input type="tel" id="estagioContactoSupervisor" name="contactoSupervisor" placeholder="Contacto do supervisor">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioDataInicio">Data de Início *</label>
+                                    <input type="date" id="estagioDataInicio" name="dataInicio" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioDataFim">Data de Término *</label>
+                                    <input type="date" id="estagioDataFim" name="dataFim" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioArea">Área do Estágio *</label>
+                                    <input type="text" id="estagioArea" name="area" required placeholder="Ex: Desenvolvimento Web, Marketing">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estagioAvaliacao">Avaliação Final (0-20)</label>
+                                    <input type="number" id="estagioAvaliacao" name="avaliacao" min="0" max="20" step="0.1" placeholder="Nota final">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="estagioObservacoes">Observações</label>
+                                <textarea id="estagioObservacoes" name="observacoes" rows="3" placeholder="Observações sobre o estágio..."></textarea>
+                            </div>
+
+                            <button type="submit" class="submit-btn">💼 Registrar Estágio</button>
+                        </form>
+                    </div>
+
+                    <div class="estagios-list">
+                        <h3>Estágios Registrados</h3>
+                        <div class="search-box">
+                            <input type="text" id="searchEstagios" placeholder="Pesquisar estágios..." onkeyup="tutorSystem.filtrarEstagios()">
+                        </div>
+                        <div id="listaEstagios" class="estagios-grid">
+                            <!-- Estágios serão carregados aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Meu Perfil Section -->
+                <section id="meu-perfil" class="content-section">
+                    <h2>Meu Perfil</h2>
+                    <div class="user-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nome Completo</label>
+                                <input type="text" id="perfilNome" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Especialidade</label>
+                                <input type="text" id="perfilEspecialidade" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="perfilEmail" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Contacto</label>
+                                <input type="tel" id="perfilContacto" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Formação Académica</label>
+                                <input type="text" id="perfilFormacao" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Data de Registo</label>
+                                <input type="text" id="perfilDataRegisto" readonly>
+                            </div>
+                        </div>
+
+                        <div class="turma-stats">
+                            <div class="stat-mini">
+                                <div class="number" id="statTurmasAtivas">0</div>
+                                <div class="label">Turmas Ativas</div>
+                            </div>
+                            <div class="stat-mini">
+                                <div class="number" id="statTotalEstudantes">0</div>
+                                <div class="label">Estudantes</div>
+                            </div>
+                            <div class="stat-mini">
+                                <div class="number" id="statAvaliacoes">0</div>
+                                <div class="label">Avaliações</div>
+                            </div>
+                            <div class="stat-mini">
+                                <div class="number" id="statEstagios">0</div>
+                                <div class="label">Estágios</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal para detalhes da turma -->
+    <div id="modalTurma" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="fecharModalTurma()">&times;</span>
+            <h3>Detalhes da Turma</h3>
+            <div id="detalhesTurma">
+                <!-- Detalhes serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalhes do estágio -->
+    <div id="modalEstagio" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="fecharModalEstagio()">&times;</span>
+            <h3>Detalhes do Estágio</h3>
+            <div id="detalhesEstagio">
+                <!-- Detalhes serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funções globais para modais
+        function fecharModalTurma() {
+            document.getElementById('modalTurma').style.display = 'none';
+        }
+
+        function fecharModalEstagio() {
+            document.getElementById('modalEstagio').style.display = 'none';
+        }
+
+        class TutorSystem {
+            constructor() {
+                this.currentUser = null;
+                this.turmaSelecionada = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.carregarTurmasParaAvaliacao();
+                this.carregarEstudantesParaEstagio();
+                this.carregarMeuPerfil();
+            }
+
+            checkAuth() {
+                const savedUser = localStorage.getItem('ipmc_currentUser');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.currentUser = JSON.parse(savedUser);
+                if (this.currentUser.profile !== 'tutor') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('userWelcome').textContent = 
+                    `Bem-vindo, ${this.currentUser.personalInfo?.nome || 'Tutor'}`;
+            }
+
+            setupEventListeners() {
+                // Navegação
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showSection(link.dataset.section);
+                    });
+                });
+
+                // Formulário de estágio
+                const formEstagio = document.getElementById('formEstagio');
+                if (formEstagio) {
+                    formEstagio.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.registrarEstagio();
+                    });
+                }
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                if (sectionId === 'minhas-turmas') {
+                    this.loadTurmasAtribuidas();
+                } else if (sectionId === 'avaliacoes') {
+                    this.carregarHistoricoAvaliacoes();
+                } else if (sectionId === 'estagios') {
+                    this.carregarEstagios();
+                }
+            }
+
+            loadDashboardData() {
+                const minhasTurmas = this.getMinhasTurmas();
+                const estudantes = this.getMeusEstudantes();
+                const avaliacoes = this.getMinhasAvaliacoes();
+                const estagios = this.getMeusEstagios();
+
+                document.getElementById('turmasAtivas').textContent = minhasTurmas.length;
+                document.getElementById('totalEstudantes').textContent = estudantes.length;
+                document.getElementById('avaliacoesPendentes').textContent = 
+                    avaliacoes.filter(a => !a.finalizada).length;
+                document.getElementById('estagiosAtivos').textContent = 
+                    estagios.filter(e => e.status === 'ativo').length;
+
+                this.loadMinhasTurmasDashboard();
+                this.loadUltimasAvaliacoesDashboard();
+            }
+
+            loadMinhasTurmasDashboard() {
+                const minhasTurmas = this.getMinhasTurmas();
+                const container = document.getElementById('minhasTurmasList');
+                
+                if (minhasTurmas.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma turma atribuída</p>';
+                    return;
+                }
+
+                container.innerHTML = minhasTurmas.slice(0, 4).map(turma => {
+                    const numeroEstudantes = this.getNumeroEstudantesTurma(turma.id);
+                    const percentualOcupacao = (numeroEstudantes / turma.vagas) * 100;
+                    
+                    return `
+                        <div class="turma-card">
+                            <div class="turma-header">
+                                <h3>${turma.nome}</h3>
+                            </div>
+                            <div class="turma-info">
+                                <p><strong>Curso:</strong> ${this.getCursoNome(turma.cursoId)}</p>
+                                <p><strong>Sala:</strong> ${turma.sala}</p>
+                                <p><strong>Período:</strong> ${turma.periodo}</p>
+                                <p><strong>Estudantes:</strong> ${numeroEstudantes}/${turma.vagas}</p>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${percentualOcupacao}%"></div>
+                                </div>
+                                <small>Ocupação: ${percentualOcupacao.toFixed(1)}%</small>
+                            </div>
+                            <div class="turma-actions">
+                                <button onclick="tutorSystem.verDetalhesTurma(${turma.id})" class="action-btn primary">Ver Turma</button>
+                                <button onclick="tutorSystem.lancarAvaliacaoTurma(${turma.id})" class="action-btn success">Avaliar</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            loadUltimasAvaliacoesDashboard() {
+                const avaliacoes = this.getMinhasAvaliacoes().slice(-5).reverse();
+                const container = document.getElementById('ultimasAvaliacoes');
+                
+                if (avaliacoes.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma avaliação lançada</p>';
+                    return;
+                }
+
+                container.innerHTML = avaliacoes.map(avaliacao => {
+                    const turma = this.getTurmaById(avaliacao.turmaId);
+                    const media = this.calcularMediaAvaliacao(avaliacao);
+                    
+                    return `
+                        <div class="avaliacao-item">
+                            <div class="avaliacao-info">
+                                <h4>${avaliacao.disciplina} - ${avaliacao.tipo}</h4>
+                                <p>Turma: ${turma.nome} | Data: ${this.formatDate(avaliacao.data)}</p>
+                                <p>Peso: ${avaliacao.peso}% | Estudantes: ${Object.keys(avaliacao.notas).length}</p>
+                            </div>
+                            <div class="nota-badge ${this.getClassNota(media)}">
+                                Média: ${media.toFixed(1)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            loadTurmasAtribuidas() {
+                const minhasTurmas = this.getMinhasTurmas();
+                const container = document.getElementById('turmasAtribuidasList');

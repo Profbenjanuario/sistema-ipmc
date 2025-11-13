@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Pedagógico - Sistema IPMC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .user-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #e1e5e9;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .turmas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .turma-card {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .turma-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .turma-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .turma-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.validada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.recusada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .turma-info p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .turma-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .tutores-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tutores-table th,
+        .tutores-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .tutores-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tutores-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Sistema IPMC - Pedagógico</h1>
+            </div>
+            <div class="header-right">
+                <span id="userWelcome">Bem-vindo, Pedagógico</span>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#validar-turmas" class="nav-link" data-section="validar-turmas">Validar Turmas</a></li>
+                    <li><a href="#criar-perfis" class="nav-link" data-section="criar-perfis">Criar Perfis</a></li>
+                    <li><a href="#gestao-tutores" class="nav-link" data-section="gestao-tutores">Gestão de Tutores</a></li>
+                    <li><a href="#atribuir-turmas" class="nav-link" data-section="atribuir-turmas">Atribuir Turmas</a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <h2>Dashboard Pedagógico</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Turmas Pendentes</h3>
+                            <span id="turmasPendentes" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Turmas Validadas</h3>
+                            <span id="turmasValidadas" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total de Tutores</h3>
+                            <span id="totalTutores" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Secretárias Activas</h3>
+                            <span id="secretariasAtivas" class="stat-number">0</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-activities">
+                        <h3>Turmas para Validação</h3>
+                        <div id="turmasParaValidacao" class="turmas-grid">
+                            <!-- Turmas pendentes serão carregadas aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Validar Turmas Section -->
+                <section id="validar-turmas" class="content-section">
+                    <h2>Validação de Turmas</h2>
+                    <div id="listaTurmasPendentes" class="turmas-grid">
+                        <!-- Turmas pendentes serão carregadas aqui -->
+                    </div>
+                </section>
+
+                <!-- Criar Perfis Section -->
+                <section id="criar-perfis" class="content-section">
+                    <h2>Criar Perfis de Staff</h2>
+                    
+                    <div class="user-form">
+                        <h3>Criar Perfil de Secretaria</h3>
+                        <form id="formSecretaria">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="secretariaNome">Nome Completo *</label>
+                                    <input type="text" id="secretariaNome" name="nome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaDataNascimento">Data de Nascimento *</label>
+                                    <input type="date" id="secretariaDataNascimento" name="dataNascimento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaBilhete">Bilhete de Identidade *</label>
+                                    <input type="text" id="secretariaBilhete" name="bilheteIdentidade" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaFormacao">Formação Profissional *</label>
+                                    <input type="text" id="secretariaFormacao" name="formacao" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaResidencia">Residência *</label>
+                                    <input type="text" id="secretariaResidencia" name="residencia" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaContacto">Contacto *</label>
+                                    <input type="tel" id="secretariaContacto" name="contacto" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaEmail">Email *</label>
+                                    <input type="email" id="secretariaEmail" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaUsername">Username *</label>
+                                    <input type="text" id="secretariaUsername" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secretariaPassword">Password *</label>
+                                    <input type="password" id="secretariaPassword" name="password" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Documentos de Formação</label>
+                                <div class="file-upload" onclick="document.getElementById('docsSecretaria').click()">
+                                    <p>Clique para fazer upload dos documentos</p>
+                                    <small>Formatos aceites: PDF, JPG, PNG (Max: 5MB)</small>
+                                    <input type="file" id="docsSecretaria" name="documentos" accept=".pdf,.jpg,.png">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="submit-btn">Criar Perfil de Secretaria</button>
+                        </form>
+                    </div>
+
+                    <div class="user-form">
+                        <h3>Criar Perfil de Tutor/Professor</h3>
+                        <form id="formTutor">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="tutorNome">Nome Completo *</label>
+                                    <input type="text" id="tutorNome" name="nome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorDataNascimento">Data de Nascimento *</label>
+                                    <input type="date" id="tutorDataNascimento" name="dataNascimento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorBilhete">Bilhete de Identidade *</label>
+                                    <input type="text" id="tutorBilhete" name="bilheteIdentidade" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorEspecialidade">Especialidade *</label>
+                                    <input type="text" id="tutorEspecialidade" name="especialidade" required placeholder="Ex: Matemática, Programação">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorFormacao">Formação Académica *</label>
+                                    <input type="text" id="tutorFormacao" name="formacao" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorResidencia">Residência *</label>
+                                    <input type="text" id="tutorResidencia" name="residencia" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorContacto">Contacto *</label>
+                                    <input type="tel" id="tutorContacto" name="contacto" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorEmail">Email *</label>
+                                    <input type="email" id="tutorEmail" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorUsername">Username *</label>
+                                    <input type="text" id="tutorUsername" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tutorPassword">Password *</label>
+                                    <input type="password" id="tutorPassword" name="password" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Certificado de Habilitações</label>
+                                <div class="file-upload" onclick="document.getElementById('certificadoTutor').click()">
+                                    <p>Clique para fazer upload do certificado</p>
+                                    <small>Formatos aceites: PDF, JPG, PNG (Max: 5MB)</small>
+                                    <input type="file" id="certificadoTutor" name="certificado" accept=".pdf,.jpg,.png">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="submit-btn">Criar Perfil de Tutor</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Gestão de Tutores Section -->
+                <section id="gestao-tutores" class="content-section">
+                    <h2>Gestão de Tutores</h2>
+                    <div class="tutores-list">
+                        <h3>Tutores Registrados</h3>
+                        <table class="tutores-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Especialidade</th>
+                                    <th>Contacto</th>
+                                    <th>Email</th>
+                                    <th>Turmas Atribuídas</th>
+                                    <th>Status</th>
+                                    <th>Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaTutores">
+                                <!-- Tutores serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Atribuir Turmas Section -->
+                <section id="atribuir-turmas" class="content-section">
+                    <h2>Atribuir Turmas a Tutores</h2>
+                    <div id="listaTurmasParaAtribuir" class="turmas-grid">
+                        <!-- Turmas validadas sem tutor serão carregadas aqui -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal para validação de turma -->
+    <div id="modalValidacao" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="fecharModal()">&times;</span>
+            <h3>Validar Turma</h3>
+            <form id="formValidacaoTurma">
+                <div class="form-group">
+                    <label for="tutorSelect">Atribuir Tutor:</label>
+                    <select id="tutorSelect" name="tutorId" required>
+                        <option value="">Selecione um tutor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="observacoes">Observações:</label>
+                    <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações sobre a validação..."></textarea>
+                </div>
+                <input type="hidden" id="turmaIdValidacao" name="turmaId">
+                <div class="turma-actions">
+                    <button type="button" onclick="validarTurma('aprovada')" class="action-btn success">Aprovar</button>
+                    <button type="button" onclick="validarTurma('recusada')" class="action-btn danger">Recusar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class PedagogicoSystem {
+            constructor() {
+                this.currentUser = null;
+                this.turmaEmValidacao = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.carregarTurmasPendentes();
+                this.carregarTutores();
+            }
+
+            checkAuth() {
+                const savedUser = localStorage.getItem('ipmc_currentUser');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.currentUser = JSON.parse(savedUser);
+                if (this.currentUser.profile !== 'pedagogico') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('userWelcome').textContent = 
+                    `Bem-vindo, ${this.currentUser.personalInfo?.nome || 'Pedagógico'}`;
+            }
+
+            setupEventListeners() {
+                // Navegação
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showSection(link.dataset.section);
+                    });
+                });
+
+                // Formulários
+                const formSecretaria = document.getElementById('formSecretaria');
+                if (formSecretaria) {
+                    formSecretaria.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.criarPerfilSecretaria();
+                    });
+                }
+
+                const formTutor = document.getElementById('formTutor');
+                if (formTutor) {
+                    formTutor.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.criarPerfilTutor();
+                    });
+                }
+
+                // Upload de documentos
+                ['docsSecretaria', 'certificadoTutor'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', (e) => {
+                            this.handleFileUpload(e);
+                        });
+                    }
+                });
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                if (sectionId === 'validar-turmas') {
+                    this.carregarTurmasPendentes();
+                } else if (sectionId === 'gestao-tutores') {
+                    this.carregarTutores();
+                } else if (sectionId === 'atribuir-turmas') {
+                    this.carregarTurmasParaAtribuir();
+                }
+            }
+
+            loadDashboardData() {
+                const turmas = this.getTurmas();
+                const turmasPendentes = turmas.filter(t => t.status === 'pendente');
+                const turmasValidadas = turmas.filter(t => t.status === 'validada');
+                const tutores = this.getUsers().filter(u => u.profile === 'tutor');
+                const secretarias = this.getUsers().filter(u => u.profile === 'secretaria');
+
+                document.getElementById('turmasPendentes').textContent = turmasPendentes.length;
+                document.getElementById('turmasValidadas').textContent = turmasValidadas.length;
+                document.getElementById('totalTutores').textContent = tutores.length;
+                document.getElementById('secretariasAtivas').textContent = secretarias.length;
+
+                // Carregar turmas para validação no dashboard
+                this.carregarTurmasParaValidacaoDashboard();
+            }
+
+            carregarTurmasParaValidacaoDashboard() {
+                const turmasPendentes = this.getTurmas().filter(t => t.status === 'pendente').slice(0, 3);
+                const container = document.getElementById('turmasParaValidacao');
+                
+                if (turmasPendentes.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma turma aguardando validação</p>';
+                    return;
+                }
+
+                container.innerHTML = turmasPendentes.map(turma => `
+                    <div class="turma-card">
+                        <div class="turma-header">
+                            <h3>${turma.nome}</h3>
+                            <span class="status-badge pendente">Pendente</span>
+                        </div>
+                        <div class="turma-info">
+                            <p><strong>Curso:</strong> ${this.getCursoNome(turma.cursoId)}</p>
+                            <p><strong>Sala:</strong> ${turma.sala}</p>
+                            <p><strong>Período:</strong> ${turma.periodo}</p>
+                            <p><strong>Vagas:</strong> ${turma.vagas}</p>
+                            <p><strong>Criada em:</strong> ${this.formatDate(turma.createdAt)}</p>
+                        </div>
+                        <div class="turma-actions">
+                            <button onclick="pedagogicoSystem.validarTurmaModal(${turma.id})" class="action-btn primary">Validar</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            carregarTurmasPendentes() {
+                const turmasPendentes = this.getTurmas().filter(t => t.status === 'pendente');
+                const container = document.getElementById('listaTurmasPendentes');
+                
+                if (turmasPendentes.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma turma pendente de validação</p>';
+                    return;
+                }
+
+                container.innerHTML = turmasPendentes.map(turma => `
+                    <div class="turma-card">
+                        <div class="turma-header">
+                            <h3>${turma.nome}</h3>
+                            <span class="status-badge pendente">Pendente</span>
+                        </div>
+                        <div class="turma-info">
+                            <p><strong>Curso:</strong> ${this.getCursoNome(turma.cursoId)}</p>
+                            <p><strong>Sala:</strong> ${turma.sala}</p>
+                            <p><strong>Período:</strong> ${turma.periodo}</p>
+                            <p><strong>Vagas:</strong> ${turma.vagas}</p>
+                            <p><strong>Ano Letivo:</strong> ${turma.anoLetivo}</p>
+                            <p><strong>Período:</strong> ${this.formatDate(turma.dataInicio)} a ${this.formatDate(turma.dataFim)}</p>
+                            <p><strong>Criada por:</strong> ${this.getUserName(turma.criadoPor)}</p>
+                        </div>
+                        <div class="turma-actions">
+                            <button onclick="pedagogicoSystem.validarTurmaModal(${turma.id})" class="action-btn primary">Validar Turma</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            validarTurmaModal(turmaId) {
+                this.turmaEmValidacao = turmaId;
+                const modal = document.getElementById('modalValidacao');
+                const turma = this.getTurmas().find(t => t.id === turmaId);
+                
+                if (turma) {
+                    document.getElementById('turmaIdValidacao').value = turmaId;
+                    
+                    // Carregar tutores no select
+                    this.carregarTutoresNoSelect();
+                    
+                    modal.style.display = 'block';
+                }
+            }
+
+            carregarTutoresNoSelect() {
+                const tutores = this.getUsers().filter(u => u.profile === 'tutor' && u.status === 'ativo');
+                const select = document.getElementById('tutorSelect');
+                
+                select.innerHTML = '<option value="">Selecione um tutor</option>' +
+                    tutores.map(tutor => `
+                        <option value="${tutor.id}">${tutor.personalInfo.nome} - ${tutor.personalInfo.especialidade}</option>
+                    `).join('');
+            }
+
+            carregarTutores() {
+                const tutores = this.getUsers().filter(u => u.profile === 'tutor');
+                const container = document.getElementById('tabelaTutores');
+                
+                if (tutores.length === 0) {
+                    container.innerHTML = '<tr><td colspan="7" class="no-data">Nenhum tutor registrado</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = tutores.map(tutor => {
+                    const turmasAtribuidas = this.getTurmas().filter(t => t.tutorId === tutor.id).length;
+                    return `
+                        <tr>
+                            <td>${tutor.personalInfo?.nome || 'N/A'}</td>
+                            <td>${tutor.personalInfo?.especialidade || 'N/A'}</td>
+                            <td>${tutor.personalInfo?.contacto || 'N/A'}</td>
+                            <td>${tutor.personalInfo?.email || 'N/A'}</td>
+                            <td>${turmasAtribuidas}</td>
+                            <td>${tutor.status === 'ativo' ? 'Ativo' : 'Inativo'}</td>
+                            <td>
+                                <button onclick="pedagogicoSystem.editarTutor(${tutor.id})" class="action-btn primary">Editar</button>
+                                <button onclick="pedagogicoSystem.alterarStatusTutor(${tutor.id})" class="action-btn ${tutor.status === 'ativo' ? 'danger' : 'success'}">
+                                    ${tutor.status === 'ativo' ? 'Desativar' : 'Ativar'}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            carregarTurmasParaAtribuir() {
+                const turmasSemTutor = this.getTurmas().filter(t => t.status === 'validada' && !t.tutorId);
+                const container = document.getElementById('listaTurmasParaAtribuir');
+                
+                if (turmasSemTutor.length === 0) {
+                    container.innerHTML = '<p class="no-data">Todas as turmas válidas já têm tutor atribuído</p>';
+                    return;
+                }
+
+                container.innerHTML = turmasSemTutor.map(turma => `
+                    <div class="turma-card">
+                        <div class="turma-header">
+                            <h3>${turma.nome}</h3>
+                            <span class="status-badge validada">Validada</span>
+                        </div>
+                        <div class="turma-info">
+                            <p><strong>Curso:</strong> ${this.getCursoNome(turma.cursoId)}</p>
+                            <p><strong>Sala:</strong> ${turma.sala}</p>
+                            <p><strong>Período:</strong> ${turma.periodo}</p>
+                            <p><strong>Vagas:</strong> ${turma.vagas}</p>
+                            <p><strong>Estudantes Matriculados:</strong> ${this.getNumeroEstudantesTurma(turma.id)}</p>
+                        </div>
+                        <div class="turma-actions">
+                            <button onclick="pedagogicoSystem.atribuirTutorModal(${turma.id})" class="action-btn primary">Atribuir Tutor</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            criarPerfilSecretaria() {
+                const form = document.getElementById('formSecretaria');
+                const formData = new FormData(form);
+
+                const userData = {
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    profile: 'secretaria',
+                    personalInfo: {
+                        nome: formData.get('nome'),
+                        dataNascimento: formData.get('dataNascimento'),
+                        bilheteIdentidade: formData.get('bilheteIdentidade'),
+                        formacao: formData.get('formacao'),
+                        residencia: formData.get('residencia'),
+                        contacto: formData.get('contacto'),
+                        email: formData.get('email')
+                    },
+                    documentos: formData.get('documentos') ? this.handleFileUpload() : null,
+                    criadoPor: this.currentUser.id,
+                    status: 'ativo'
+                };
+
+                if (this.getUserByUsername(userData.username)) {
+                    alert('Username já existe! Escolha outro.');
+                    return;
+                }
+
+                try {
+                    const users = this.getUsers();
+                    userData.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+                    userData.createdAt = new Date().toISOString();
+                    
+                    users.push(userData);
+                    this.saveUsers(users);
+
+                    alert('Perfil de secretaria criado com sucesso!');
+                    form.reset();
+                    this.loadDashboardData();
+                    
+                } catch (error) {
+                    alert('Erro ao criar perfil: ' + error.message);
+                }
+            }
+
+            criarPerfilTutor() {
+                const form = document.getElementById('formTutor');
+                const formData = new FormData(form);
+
+                const userData = {
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    profile: 'tutor',
+                    personalInfo: {
+                        nome: formData.get('nome'),
+                        dataNascimento: formData.get('dataNascimento'),
+                        bilheteIdentidade: formData.get('bilheteIdentidade'),
+                        especialidade: formData.get('especialidade'),
+                        formacao: formData.get('formacao'),
+                        residencia: formData.get('residencia'),
+                        contacto: formData.get('contacto'),
+                        email: formData.get('email')
+                    },
+                    certificado: formData.get('certificado') ? this.handleFileUpload() : null,
+                    criadoPor: this.currentUser.id,
+                    status: 'ativo'
+                };
+
+                if (this.getUserByUsername(userData.username)) {
+                    alert('Username já existe! Escolha outro.');
+                    return;
+                }
+
+                try {
+                    const users = this.getUsers();
+                    userData.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+                    userData.createdAt = new Date().toISOString();
+                    
+                    users.push(userData);
+                    this.saveUsers(users);
+
+                    alert('Perfil de tutor criado com sucesso!');
+                    form.reset();
+                    this.loadDashboardData();
+                    this.carregarTutores();
+                    
+                } catch (error) {
+                    alert('Erro ao criar perfil: ' + error.message);
+                }
+            }
+
+            handleFileUpload(event) {
+                const file = event ? event.target.files[0] : null;
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Ficheiro muito grande. Máximo 5MB.');
+                        return null;
+                    }
+                    return file.name;
+                }
+                return null;
+            }
+
+            // Métodos do banco de dados
+            getUsers() {
+                return JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+            }
+
+            saveUsers(users) {
+                localStorage.setItem('ipmc_users', JSON.stringify(users));
+            }
+
+            getUserByUsername(username) {
+                const users = this.getUsers();
+                return users.find(u => u.username === username);
+            }
+
+            getTurmas() {
+                return JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+            }
+
+            saveTurmas(turmas) {
+                localStorage.setItem('ipmc_turmas', JSON.stringify(turmas));
+            }
+
+            getCursos() {
+                return JSON.parse(localStorage.getItem('ipmc_cursos') || '[]');
+            }
+
+            getCursoNome(cursoId) {
+                const cursos = this.getCursos();
+                const curso = cursos.find(c => c.id === cursoId);
+                return curso ? curso.nome : 'Curso não encontrado';
+            }
+
+            getUserName(userId) {
+                const users = this.getUsers();
+                const user = users.find(u => u.id === userId);
+                return user ? user.personalInfo?.nome : 'Usuário não encontrado';
+            }
+
+            getNumeroEstudantesTurma(turmaId) {
+                const estudantes = JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+                return estudantes.filter(e => e.turmaId === turmaId).length;
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('pt-PT');
+            }
+
+            editarTutor(tutorId) {
+                alert(`Editar tutor ID: ${tutorId}`);
+            }
+
+            alterarStatusTutor(tutorId) {
+                const users = this.getUsers();
+                const user = users.find(u => u.id === tutorId);
+                if (user) {
+                    user.status = user.status === 'ativo' ? 'inativo' : 'ativo';
+                    this.saveUsers(users);
+                    this.carregarTutores();
+                    alert(`Tutor ${user.status === 'ativo' ? 'ativado' : 'desativado'} com sucesso!`);
+                }
+            }
+
+            atribuirTutorModal(turmaId) {
+                this.validarTurmaModal(turmaId);
+            }
+        }
+
+        // Funções globais para o modal
+        function fecharModal() {
+            document.getElementById('modalValidacao').style.display = 'none';
+        }
+
+        function validarTurma(acao) {
+            const pedagogicoSystem = window.pedagogicoSystem;
+            const turmaId = pedagogicoSystem.turmaEmValidacao;
+            const tutorId = document.getElementById('tutorSelect').value;
+            const observacoes = document.getElementById('observacoes').value;
+
+            if (acao === 'aprovada' && !tutorId) {
+                alert('Selecione um tutor para atribuir à turma.');
+                return;
+            }
+
+            const turmas = pedagogicoSystem.getTurmas();
+            const turmaIndex = turmas.findIndex(t => t.id === turmaId);
+            
+            if (turmaIndex !== -1) {
+                turmas[turmaIndex].status = acao === 'aprovada' ? 'validada' : 'recusada';
+                turmas[turmaIndex].tutorId = acao === 'aprovada' ? parseInt(tutorId) : null;
+                turmas[turmaIndex].observacoesValidacao = observacoes;
+                turmas[turmaIndex].validadoPor = pedagogicoSystem.currentUser.id;
+                turmas[turmaIndex].dataValidacao = new Date().toISOString();
+
+                pedagogicoSystem.saveTurmas(turmas);
+                fecharModal();
+                
+                alert(`Turma ${acao === 'aprovada' ? 'validada' : 'recusada'} com sucesso!`);
+                pedagogicoSystem.loadDashboardData();
+                pedagogicoSystem.carregarTurmasPendentes();
+                pedagogicoSystem.carregarTurmasParaAtribuir();
+            }
+        }
+
+        // Função global para logout
+        function logout() {
+            localStorage.removeItem('ipmc_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar sistema pedagógico
+        const pedagogicoSystem = new PedagogicoSystem();
+    </script>
+</body>
+</html>

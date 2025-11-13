@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Director - Sistema IPMC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Forms */
+        .user-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #e1e5e9;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Tables */
+        .users-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .users-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .users-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Reports */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .report-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .report-card h4 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .report-card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Sistema IPMC - Director</h1>
+            </div>
+            <div class="header-right">
+                <span id="userWelcome">Bem-vindo, Director</span>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#criar-perfil" class="nav-link" data-section="criar-perfil">Criar Perfil Pedagógico</a></li>
+                    <li><a href="#gestao-users" class="nav-link" data-section="gestao-users">Gestão de Utilizadores</a></li>
+                    <li><a href="#estatisticas" class="nav-link" data-section="estatisticas">Estatísticas Gerais</a></li>
+                    <li><a href="#relatorios" class="nav-link" data-section="relatorios">Relatórios</a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <h2>Dashboard do Director</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total de Utilizadores</h3>
+                            <span id="totalUsers" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Perfis Pedagógicos</h3>
+                            <span id="totalPedagogicos" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Secretárias</h3>
+                            <span id="totalSecretarias" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Tutores</h3>
+                            <span id="totalTutores" class="stat-number">0</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-activities">
+                        <h3>Actividade Recente</h3>
+                        <div id="atividadeRecente" class="user-form">
+                            <p class="no-data">Nenhuma atividade recente</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Criar Perfil Pedagógico Section -->
+                <section id="criar-perfil" class="content-section">
+                    <h2>Criar Perfil Pedagógico</h2>
+                    <div class="user-form">
+                        <form id="formPedagogico">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="pedagogicoNome">Nome Completo *</label>
+                                    <input type="text" id="pedagogicoNome" name="nome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoDataNascimento">Data de Nascimento *</label>
+                                    <input type="date" id="pedagogicoDataNascimento" name="dataNascimento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoBilhete">Bilhete de Identidade *</label>
+                                    <input type="text" id="pedagogicoBilhete" name="bilheteIdentidade" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoFormacao">Formação Profissional *</label>
+                                    <input type="text" id="pedagogicoFormacao" name="formacao" required placeholder="Ex: Licenciatura em Pedagogia">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoResidencia">Residência *</label>
+                                    <input type="text" id="pedagogicoResidencia" name="residencia" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoContacto">Contacto *</label>
+                                    <input type="tel" id="pedagogicoContacto" name="contacto" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoEmail">Email *</label>
+                                    <input type="email" id="pedagogicoEmail" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoUsername">Username *</label>
+                                    <input type="text" id="pedagogicoUsername" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pedagogicoPassword">Password *</label>
+                                    <input type="password" id="pedagogicoPassword" name="password" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Certificado de Formação</label>
+                                <div class="file-upload" onclick="document.getElementById('certificadoUpload').click()">
+                                    <p>Clique para fazer upload do certificado</p>
+                                    <small>Formatos aceites: PDF, JPG, PNG (Max: 5MB)</small>
+                                    <input type="file" id="certificadoUpload" name="certificado" accept=".pdf,.jpg,.png">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="submit-btn">Criar Perfil Pedagógico</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Gestão de Utilizadores Section -->
+                <section id="gestao-users" class="content-section">
+                    <h2>Gestão de Utilizadores</h2>
+                    
+                    <div class="users-list">
+                        <h3>Utilizadores do Sistema</h3>
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Username</th>
+                                    <th>Perfil</th>
+                                    <th>Contacto</th>
+                                    <th>Data de Registo</th>
+                                    <th>Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaUsers">
+                                <!-- Utilizadores serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Estatísticas Section -->
+                <section id="estatisticas" class="content-section">
+                    <h2>Estatísticas Gerais</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total de Cursos</h3>
+                            <span id="totalCursos" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total de Turmas</h3>
+                            <span id="totalTurmas" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total de Estudantes</h3>
+                            <span id="totalEstudantes" class="stat-number">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Taxa de Aprovação</h3>
+                            <span id="taxaAprovacao" class="stat-number">0%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Relatórios Section -->
+                <section id="relatorios" class="content-section">
+                    <h2>Relatórios</h2>
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h4>Relatório de Utilizadores</h4>
+                            <p>Lista completa de todos os utilizadores do sistema</p>
+                            <button onclick="directorSystem.gerarRelatorioUsers()" class="action-btn primary">Gerar Relatório</button>
+                        </div>
+                        <div class="report-card">
+                            <h4>Relatório Académico</h4>
+                            <p>Desempenho geral do sistema académico</p>
+                            <button onclick="directorSystem.gerarRelatorioAcademico()" class="action-btn primary">Gerar Relatório</button>
+                        </div>
+                        <div class="report-card">
+                            <h4>Relatório Financeiro</h4>
+                            <p>Resumo financeiro do instituto</p>
+                            <button onclick="directorSystem.gerarRelatorioFinanceiro()" class="action-btn primary">Gerar Relatório</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        class DirectorSystem {
+            constructor() {
+                this.currentUser = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.loadUsersList();
+            }
+
+            checkAuth() {
+                const savedUser = localStorage.getItem('ipmc_currentUser');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.currentUser = JSON.parse(savedUser);
+                if (this.currentUser.profile !== 'director') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('userWelcome').textContent = 
+                    `Bem-vindo, ${this.currentUser.personalInfo?.nome || 'Director'}`;
+            }
+
+            setupEventListeners() {
+                // Navegação
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showSection(link.dataset.section);
+                    });
+                });
+
+                // Formulário pedagógico
+                const formPedagogico = document.getElementById('formPedagogico');
+                if (formPedagogico) {
+                    formPedagogico.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.criarPerfilPedagogico();
+                    });
+                }
+
+                // Upload de certificado
+                const certificadoUpload = document.getElementById('certificadoUpload');
+                if (certificadoUpload) {
+                    certificadoUpload.addEventListener('change', (e) => {
+                        this.handleFileUpload(e);
+                    });
+                }
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                if (sectionId === 'gestao-users') {
+                    this.loadUsersList();
+                }
+            }
+
+            loadDashboardData() {
+                const users = this.getUsers();
+                const pedagogicos = users.filter(u => u.profile === 'pedagogico');
+                const secretarias = users.filter(u => u.profile === 'secretaria');
+                const tutores = users.filter(u => u.profile === 'tutor');
+
+                document.getElementById('totalUsers').textContent = users.length;
+                document.getElementById('totalPedagogicos').textContent = pedagogicos.length;
+                document.getElementById('totalSecretarias').textContent = secretarias.length;
+                document.getElementById('totalTutores').textContent = tutores.length;
+
+                // Carregar estatísticas gerais
+                const cursos = this.getCursos();
+                const turmas = this.getTurmas();
+                const estudantes = this.getEstudantes();
+
+                document.getElementById('totalCursos').textContent = cursos.length;
+                document.getElementById('totalTurmas').textContent = turmas.length;
+                document.getElementById('totalEstudantes').textContent = estudantes.length;
+            }
+
+            criarPerfilPedagogico() {
+                const form = document.getElementById('formPedagogico');
+                const formData = new FormData(form);
+
+                const userData = {
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    profile: 'pedagogico',
+                    personalInfo: {
+                        nome: formData.get('nome'),
+                        dataNascimento: formData.get('dataNascimento'),
+                        bilheteIdentidade: formData.get('bilheteIdentidade'),
+                        formacao: formData.get('formacao'),
+                        residencia: formData.get('residencia'),
+                        contacto: formData.get('contacto'),
+                        email: formData.get('email')
+                    },
+                    certificado: formData.get('certificado') ? this.handleFileUpload() : null,
+                    criadoPor: this.currentUser.id,
+                    status: 'ativo'
+                };
+
+                // Verificar se username já existe
+                if (this.getUserByUsername(userData.username)) {
+                    alert('Username já existe! Escolha outro.');
+                    return;
+                }
+
+                try {
+                    const users = this.getUsers();
+                    userData.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+                    userData.createdAt = new Date().toISOString();
+                    
+                    users.push(userData);
+                    this.saveUsers(users);
+
+                    alert('Perfil pedagógico criado com sucesso!');
+                    form.reset();
+                    this.loadDashboardData();
+                    this.loadUsersList();
+                    
+                } catch (error) {
+                    alert('Erro ao criar perfil: ' + error.message);
+                }
+            }
+
+            handleFileUpload(event) {
+                const file = event ? event.target.files[0] : null;
+                if (file) {
+                    // Em sistema real, aqui faria upload para servidor
+                    // Por enquanto, apenas validação básica
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Ficheiro muito grande. Máximo 5MB.');
+                        return null;
+                    }
+                    return file.name; // Retorna apenas o nome para demonstração
+                }
+                return null;
+            }
+
+            loadUsersList() {
+                const users = this.getUsers();
+                const container = document.getElementById('tabelaUsers');
+                
+                if (users.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="no-data">Nenhum utilizador registrado</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.personalInfo?.nome || 'N/A'}</td>
+                        <td>${user.username}</td>
+                        <td>${this.getProfileLabel(user.profile)}</td>
+                        <td>${user.personalInfo?.contacto || 'N/A'}</td>
+                        <td>${this.formatDate(user.createdAt)}</td>
+                        <td>
+                            <button onclick="directorSystem.editarUser(${user.id})" class="action-btn primary">Editar</button>
+                            <button onclick="directorSystem.removerUser(${user.id})" class="action-btn danger">Remover</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Métodos auxiliares do banco de dados
+            getUsers() {
+                return JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+            }
+
+            saveUsers(users) {
+                localStorage.setItem('ipmc_users', JSON.stringify(users));
+            }
+
+            getUserByUsername(username) {
+                const users = this.getUsers();
+                return users.find(u => u.username === username);
+            }
+
+            getCursos() {
+                return JSON.parse(localStorage.getItem('ipmc_cursos') || '[]');
+            }
+
+            getTurmas() {
+                return JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+            }
+
+            getEstudantes() {
+                return JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+            }
+
+            getProfileLabel(profile) {
+                const profiles = {
+                    'director': 'Director',
+                    'pedagogico': 'Pedagógico',
+                    'secretaria': 'Secretaria',
+                    'tutor': 'Tutor',
+                    'estudante': 'Estudante',
+                    'financeiro': 'Financeiro'
+                };
+                return profiles[profile] || profile;
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('pt-PT');
+            }
+
+            // Métodos para relatórios
+            gerarRelatorioUsers() {
+                const users = this.getUsers();
+                const relatorio = users.map(user => ({
+                    Nome: user.personalInfo?.nome,
+                    Username: user.username,
+                    Perfil: this.getProfileLabel(user.profile),
+                    Contacto: user.personalInfo?.contacto,
+                    Email: user.personalInfo?.email,
+                    'Data de Registo': this.formatDate(user.createdAt)
+                }));
+                
+                console.table(relatorio);
+                alert('Relatório de utilizadores gerado no console (F12)');
+            }
+
+            gerarRelatorioAcademico() {
+                alert('Relatório académico gerado com sucesso!');
+            }
+
+            gerarRelatorioFinanceiro() {
+                alert('Relatório financeiro gerado com sucesso!');
+            }
+
+            editarUser(userId) {
+                alert(`Editar usuário ID: ${userId}`);
+            }
+
+            removerUser(userId) {
+                if (confirm('Tem certeza que deseja remover este utilizador?')) {
+                    const users = this.getUsers();
+                    const updatedUsers = users.filter(user => user.id !== userId);
+                    this.saveUsers(updatedUsers);
+                    this.loadUsersList();
+                    this.loadDashboardData();
+                    alert('Utilizador removido com sucesso!');
+                }
+            }
+        }
+
+        // Função global para logout
+        function logout() {
+            localStorage.removeItem('ipmc_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar sistema do director
+        const directorSystem = new DirectorSystem();
+    </script>
+</body>
+</html>

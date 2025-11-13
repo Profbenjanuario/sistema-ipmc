@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema IPMC - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            50% { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container fade-in">
+        <div class="logo">
+            <h1>IPMC</h1>
+            <p>Sistema Integrado de Gestão Académica</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Digite seu username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Digite sua password">
+            </div>
+
+            <button type="submit" class="login-btn">Entrar no Sistema</button>
+        </form>
+    </div>
+
+    <script>
+        class AuthSystem {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.checkExistingAuth();
+            }
+
+            setupEventListeners() {
+                const loginForm = document.getElementById('loginForm');
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+            }
+
+            checkExistingAuth() {
+                const currentUser = localStorage.getItem('ipmc_currentUser');
+                if (currentUser) {
+                    const user = JSON.parse(currentUser);
+                    this.redirectToDashboard(user.profile);
+                }
+            }
+
+            handleLogin() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+                const user = users.find(u => 
+                    u.username === username && 
+                    u.password === password
+                );
+
+                if (user) {
+                    // Salvar usuário atual
+                    localStorage.setItem('ipmc_currentUser', JSON.stringify(user));
+                    this.redirectToDashboard(user.profile);
+                } else {
+                    this.showError('Credenciais inválidas. Verifique username e password.');
+                }
+            }
+
+            redirectToDashboard(profile) {
+                // Efeito de transição
+                document.querySelector('.login-container').style.transform = 'translateY(-20px)';
+                document.querySelector('.login-container').style.opacity = '0';
+                
+                setTimeout(() => {
+                    switch(profile) {
+                        case 'secretaria':
+                            window.location.href = 'secretaria.html';
+                            break;
+                        case 'pedagogico':
+                            window.location.href = 'pedagogico.html';
+                            break;
+                        case 'director':
+                            window.location.href = 'director.html';
+                            break;
+                        case 'tutor':
+                            window.location.href = 'tutor.html';
+                            break;
+                        case 'estudante':
+                            window.location.href = 'estudante.html';
+                            break;
+                        case 'financeiro':
+                            window.location.href = 'financeiro.html';
+                            break;
+                        default:
+                            window.location.href = 'index.html';
+                    }
+                }, 300);
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Inicializar sistema de autenticação
+        new AuthSystem();
+    </script>
+</body>
+</html>

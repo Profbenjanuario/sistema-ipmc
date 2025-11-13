@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Financeiro - Sistema IPMC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-receita {
+            color: #28a745;
+        }
+
+        .stat-despesa {
+            color: #dc3545;
+        }
+
+        .stat-saldo {
+            color: #667eea;
+        }
+
+        .stat-pendente {
+            color: #ffc107;
+        }
+
+        /* Tables */
+        .finance-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .finance-table th,
+        .finance-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .finance-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .finance-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pago {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-atrasado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-recebido {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Forms */
+        .user-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        /* Value Colors */
+        .valor-positivo {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .valor-negativo {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Sistema IPMC - Financeiro</h1>
+            </div>
+            <div class="header-right">
+                <span id="userWelcome">Bem-vindo, Financeiro</span>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#mensalidades" class="nav-link" data-section="mensalidades">Mensalidades</a></li>
+                    <li><a href="#pagamentos" class="nav-link" data-section="pagamentos">Pagamentos</a></li>
+                    <li><a href="#despesas" class="nav-link" data-section="despesas">Despesas</a></li>
+                    <li><a href="#relatorios" class="nav-link" data-section="relatorios">Relatórios</a></li>
+                    <li><a href="#configuracoes" class="nav-link" data-section="configuracoes">Configurações</a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <h2>Dashboard Financeiro</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Receita do Mês</h3>
+                            <span id="receitaMes" class="stat-number stat-receita">0 KZ</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Despesas do Mês</h3>
+                            <span id="despesasMes" class="stat-number stat-despesa">0 KZ</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Saldo Atual</h3>
+                            <span id="saldoAtual" class="stat-number stat-saldo">0 KZ</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Pagamentos Pendentes</h3>
+                            <span id="pagamentosPendentes" class="stat-number stat-pendente">0</span>
+                        </div>
+                    </div>
+
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <h3>Receitas vs Despesas</h3>
+                            <div class="chart-placeholder">
+                                Gráfico de Receitas vs Despesas
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Pagamentos por Status</h3>
+                            <div class="chart-placeholder">
+                                Gráfico de Status de Pagamentos
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="finance-table">
+                        <h3 style="padding: 1rem; margin: 0;">Últimas Transações</h3>
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Estudante/Fornecedor</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ultimasTransacoes">
+                                <!-- Transações serão carregadas via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Mensalidades Section -->
+                <section id="mensalidades" class="content-section">
+                    <h2>Gestão de Mensalidades</h2>
+                    
+                    <div class="filter-section">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label for="filtroTurma">Filtrar por Turma</label>
+                                <select id="filtroTurma">
+                                    <option value="">Todas as Turmas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filtroMes">Filtrar por Mês</label>
+                                <select id="filtroMes">
+                                    <option value="">Todos os Meses</option>
+                                    <option value="1">Janeiro</option>
+                                    <option value="2">Fevereiro</option>
+                                    <option value="3">Março</option>
+                                    <option value="4">Abril</option>
+                                    <option value="5">Maio</option>
+                                    <option value="6">Junho</option>
+                                    <option value="7">Julho</option>
+                                    <option value="8">Agosto</option>
+                                    <option value="9">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12">Dezembro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filtroStatus">Filtrar por Status</label>
+                                <select id="filtroStatus">
+                                    <option value="">Todos</option>
+                                    <option value="pago">Pago</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="atrasado">Atrasado</option>
+                                </select>
+                            </div>
+                            <button onclick="financeiroSystem.filtrarMensalidades()" class="action-btn primary">Aplicar Filtros</button>
+                        </div>
+                    </div>
+
+                    <div class="finance-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Estudante</th>
+                                    <th>Turma</th>
+                                    <th>Mês/Ano</th>
+                                    <th>Valor</th>
+                                    <th>Vencimento</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaMensalidades">
+                                <!-- Mensalidades serão carregadas via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="user-form">
+                        <h3>Configurar Mensalidade Padrão</h3>
+                        <form id="formConfigMensalidade">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="valorMensalidade">Valor da Mensalidade (KZ)</label>
+                                    <input type="number" id="valorMensalidade" name="valor" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="diaVencimento">Dia de Vencimento</label>
+                                    <input type="number" id="diaVencimento" name="diaVencimento" min="1" max="31" value="10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="multaAtraso">Multa por Atraso (%)</label>
+                                    <input type="number" id="multaAtraso" name="multaAtraso" min="0" max="100" value="5" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Salvar Configuração</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Pagamentos Section -->
+                <section id="pagamentos" class="content-section">
+                    <h2>Registro de Pagamentos</h2>
+                    
+                    <div class="user-form">
+                        <h3>Registrar Novo Pagamento</h3>
+                        <form id="formPagamento">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="pagamentoEstudante">Estudante</label>
+                                    <select id="pagamentoEstudante" name="estudanteId" required>
+                                        <option value="">Selecione o estudante</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoTipo">Tipo de Pagamento</label>
+                                    <select id="pagamentoTipo" name="tipo" required>
+                                        <option value="mensalidade">Mensalidade</option>
+                                        <option value="matricula">Matrícula</option>
+                                        <option value="material">Material</option>
+                                        <option value="outro">Outro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoValor">Valor (KZ)</label>
+                                    <input type="number" id="pagamentoValor" name="valor" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoData">Data do Pagamento</label>
+                                    <input type="date" id="pagamentoData" name="data" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoMesRef">Mês de Referência</label>
+                                    <select id="pagamentoMesRef" name="mesReferencia">
+                                        <option value="">Selecione o mês</option>
+                                        <option value="1">Janeiro</option>
+                                        <option value="2">Fevereiro</option>
+                                        <option value="3">Março</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Maio</option>
+                                        <option value="6">Junho</option>
+                                        <option value="7">Julho</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoMetodo">Método de Pagamento</label>
+                                    <select id="pagamentoMetodo" name="metodo" required>
+                                        <option value="dinheiro">Dinheiro</option>
+                                        <option value="transferencia">Transferência</option>
+                                        <option value="multicaixa">Multicaixa</option>
+                                        <option value="cheque">Cheque</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pagamentoObservacao">Observações</label>
+                                <textarea id="pagamentoObservacao" name="observacao" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Registrar Pagamento</button>
+                        </form>
+                    </div>
+
+                    <div class="finance-table" style="margin-top: 2rem;">
+                        <h3 style="padding: 1rem; margin: 0;">Histórico de Pagamentos</h3>
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Estudante</th>
+                                    <th>Tipo</th>
+                                    <th>Valor</th>
+                                    <th>Método</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historicoPagamentos">
+                                <!-- Histórico será carregado via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Despesas Section -->
+                <section id="despesas" class="content-section">
+                    <h2>Gestão de Despesas</h2>
+                    
+                    <div class="user-form">
+                        <h3>Registrar Nova Despesa</h3>
+                        <form id="formDespesa">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="despesaDescricao">Descrição</label>
+                                    <input type="text" id="despesaDescricao" name="descricao" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="despesaCategoria">Categoria</label>
+                                    <select id="despesaCategoria" name="categoria" required>
+                                        <option value="salarios">Salários</option>
+                                        <option value="material">Material Escolar</option>
+                                        <option value="manutencao">Manutenção</option>
+                                        <option value="utilidades">Utilidades</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="despesaValor">Valor (KZ)</label>
+                                    <input type="number" id="despesaValor" name="valor" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="despesaData">Data</label>
+                                    <input type="date" id="despesaData" name="data" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="despesaFornecedor">Fornecedor</label>
+                                    <input type="text" id="despesaFornecedor" name="fornecedor">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesaObservacao">Observações</label>
+                                <textarea id="despesaObservacao" name="observacao" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Registrar Despesa</button>
+                        </form>
+                    </div>
+
+                    <div class="finance-table" style="margin-top: 2rem;">
+                        <h3 style="padding: 1rem; margin: 0;">Despesas Registradas</h3>
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Fornecedor</th>
+                                    <th>Valor</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaDespesas">
+                                <!-- Despesas serão carregadas via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Relatórios Section -->
+                <section id="relatorios" class="content-section">
+                    <h2>Relatórios Financeiros</h2>
+                    
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <h3>Fluxo de Caixa Mensal</h3>
+                            <div class="chart-placeholder">
+                                Gráfico de Fluxo de Caixa
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Distribuição de Receitas</h3>
+                            <div class="chart-placeholder">
+                                Gráfico de Distribuição
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>Gerar Relatório Personalizado</h3>
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label for="relatorioDataInicio">Data Início</label>
+                                <input type="date" id="relatorioDataInicio">
+                            </div>
+                            <div class="form-group">
+                                <label for="relatorioDataFim">Data Fim</label>
+                                <input type="date" id="relatorioDataFim">
+                            </div>
+                            <div class="form-group">
+                                <label for="relatorioTipo">Tipo de Relatório</label>
+                                <select id="relatorioTipo">
+                                    <option value="fluxo_caixa">Fluxo de Caixa</option>
+                                    <option value="receitas">Relatório de Receitas</option>
+                                    <option value="despesas">Relatório de Despesas</option>
+                                    <option value="mensalidades">Mensalidades em Atraso</option>
+                                </select>
+                            </div>
+                            <button onclick="financeiroSystem.gerarRelatorio()" class="action-btn primary">Gerar Relatório</button>
+                        </div>
+                    </div>
+
+                    <div id="relatorioContent" class="user-form" style="display: none;">
+                        <h3>Relatório Gerado</h3>
+                        <div id="conteudoRelatorio">
+                            <!-- Conteúdo do relatório será carregado aqui -->
+                        </div>
+                        <button onclick="financeiroSystem.exportarRelatorio()" class="action-btn success" style="margin-top: 1rem;">Exportar para PDF</button>
+                    </div>
+                </section>
+
+                <!-- Configurações Section -->
+                <section id="configuracoes" class="content-section">
+                    <h2>Configurações Financeiras</h2>
+                    
+                    <div class="user-form">
+                        <h3>Configurações do Sistema</h3>
+                        <form id="formConfiguracoes">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="configMoeda">Moeda Padrão</label>
+                                    <select id="configMoeda" name="moeda">
+                                        <option value="KZ">Kwanza (KZ)</option>
+                                        <option value="USD">Dólar (USD)</option>
+                                        <option value="EUR">Euro (EUR)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="configDiaFechamento">Dia de Fechamento</label>
+                                    <input type="number" id="configDiaFechamento" name="diaFechamento" min="1" max="31" value="25">
+                                </div>
+                                <div class="form-group">
+                                    <label for="configAlertaAtraso">Alerta de Atraso (dias)</label>
+                                    <input type="number" id="configAlertaAtraso" name="alertaAtraso" min="1" value="5">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="configNotificacoes" name="notificacoes" checked>
+                                    Enviar notificações de vencimento
+                                </label>
+                            </div>
+                            <button type="submit" class="submit-btn">Salvar Configurações</button>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        class FinanceiroSystem {
+            constructor() {
+                this.currentUser = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.carregarEstudantesParaSelect();
+                this.carregarTurmasParaSelect();
+            }
+
+            checkAuth() {
+                const savedUser = localStorage.getItem('ipmc_currentUser');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.currentUser = JSON.parse(savedUser);
+                // Permitir acesso a diretor e financeiro
+                if (!['director', 'financeiro'].includes(this.currentUser.profile)) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('userWelcome').textContent = 
+                    `Bem-vindo, ${this.currentUser.personalInfo?.nome || 'Financeiro'}`;
+            }
+
+            setupEventListeners() {
+                // Navegação
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showSection(link.dataset.section);
+                    });
+                });
+
+                // Formulários
+                const formConfigMensalidade = document.getElementById('formConfigMensalidade');
+                if (formConfigMensalidade) {
+                    formConfigMensalidade.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.salvarConfigMensalidade();
+                    });
+                }
+
+                const formPagamento = document.getElementById('formPagamento');
+                if (formPagamento) {
+                    formPagamento.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.registrarPagamento();
+                    });
+                }
+
+                const formDespesa = document.getElementById('formDespesa');
+                if (formDespesa) {
+                    formDespesa.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.registrarDespesa();
+                    });
+                }
+
+                const formConfiguracoes = document.getElementById('formConfiguracoes');
+                if (formConfiguracoes) {
+                    formConfiguracoes.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.salvarConfiguracoes();
+                    });
+                }
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                // Carregar dados específicos da seção
+                if (sectionId === 'mensalidades') {
+                    this.loadMensalidades();
+                } else if (sectionId === 'pagamentos') {
+                    this.loadHistoricoPagamentos();
+                } else if (sectionId === 'despesas') {
+                    this.loadDespesas();
+                }
+            }
+
+            loadDashboardData() {
+                const pagamentos = this.getPagamentosMesAtual();
+                const despesas = this.getDespesasMesAtual();
+                const mensalidades = this.getMensalidadesPendentes();
+
+                const receita = pagamentos.reduce((total, p) => total + p.valor, 0);
+                const despesa = despesas.reduce((total, d) => total + d.valor, 0);
+
+                document.getElementById('receitaMes').textContent = this.formatarMoeda(receita);
+                document.getElementById('despesasMes').textContent = this.formatarMoeda(despesa);
+                document.getElementById('saldoAtual').textContent = this.formatarMoeda(receita - despesa);
+                document.getElementById('pagamentosPendentes').textContent = mensalidades.length;
+
+                this.loadUltimasTransacoes();
+            }
+
+            loadUltimasTransacoes() {
+                const pagamentos = this.getPagamentos().slice(0, 10);
+                const container = document.getElementById('ultimasTransacoes');
+                
+                if (pagamentos.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="no-data">Nenhuma transação encontrada</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = pagamentos.map(pagamento => {
+                    const estudante = this.getEstudante(pagamento.estudanteId);
+                    return `
+                        <tr>
+                            <td>${this.formatarData(pagamento.data)}</td>
+                            <td>${pagamento.tipo} - ${pagamento.observacao || ''}</td>
+                            <td>${estudante?.personalInfo?.nome || 'N/A'}</td>
+                            <td class="valor-positivo">${this.formatarMoeda(pagamento.valor)}</td>
+                            <td><span class="status-badge status-${pagamento.status}">${this.getStatusText(pagamento.status)}</span></td>
+                            <td>Receita</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            carregarEstudantesParaSelect() {
+                const estudantes = this.getTodosEstudantes();
+                const select = document.getElementById('pagamentoEstudante');
+                
+                select.innerHTML = '<option value="">Selecione o estudante</option>' +
+                    estudantes.map(estudante => `
+                        <option value="${estudante.id}">${estudante.personalInfo.nome} - ${estudante.matricula}</option>
+                    `).join('');
+            }
+
+            carregarTurmasParaSelect() {
+                const turmas = JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+                const select = document.getElementById('filtroTurma');
+                
+                select.innerHTML = '<option value="">Todas as Turmas</option>' +
+                    turmas.map(turma => `
+                        <option value="${turma.id}">${turma.nome}</option>
+                    `).join('');
+            }
+
+            loadMensalidades() {
+                const mensalidades = this.gerarMensalidades();
+                const container = document.getElementById('tabelaMensalidades');
+                
+                if (mensalidades.length === 0) {
+                    container.innerHTML = '<tr><td colspan="7" class="no-data">Nenhuma mensalidade encontrada</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = mensalidades.map(mensalidade => {
+                    const estudante = this.getEstudante(mensalidade.estudanteId);
+                    const turma = this.getTurma(mensalidade.turmaId);
+                    return `
+                        <tr>
+                            <td>${estudante?.personalInfo?.nome || 'N/A'}</td>
+                            <td>${turma?.nome || 'N/A'}</td>
+                            <td>${this.getNomeMes(mensalidade.mes)}/${mensalidade.ano}</td>
+                            <td>${this.formatarMoeda(mensalidade.valor)}</td>
+                            <td>${this.formatarData(mensalidade.vencimento)}</td>
+                            <td><span class="status-badge status-${mensalidade.status}">${this.getStatusText(mensalidade.status)}</span></td>
+                            <td>
+                                ${mensalidade.status !== 'pago' ? `
+                                    <button onclick="financeiroSystem.marcarComoPago(${mensalidade.id})" class="action-btn success">Pagar</button>
+                                ` : ''}
+                                <button onclick="financeiroSystem.gerarRecibo(${mensalidade.id})" class="action-btn primary">Recibo</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            filtrarMensalidades() {
+                // Implementar filtros
+                this.loadMensalidades();
+            }
+
+            salvarConfigMensalidade() {
+                const form = document.getElementById('formConfigMensalidade');
+                const formData = new FormData(form);
+                
+                const config = {
+                    valor: parseFloat(formData.get('valor')),
+                    diaVencimento: parseInt(formData.get('diaVencimento')),
+                    multaAtraso: parseFloat(formData.get('multaAtraso'))
+                };
+
+                localStorage.setItem('ipmc_config_mensalidade', JSON.stringify(config));
+                alert('Configuração salva com sucesso!');
+            }
+
+            registrarPagamento() {
+                const form = document.getElementById('formPagamento');
+                const formData = new FormData(form);
+                
+                const pagamentoData = {
+                    estudanteId: parseInt(formData.get('estudanteId')),
+                    tipo: formData.get('tipo'),
+                    valor: parseFloat(formData.get('valor')),
+                    data: formData.get('data'),
+                    mesReferencia: formData.get('mesReferencia') || null,
+                    metodo: formData.get('metodo'),
+                    observacao: formData.get('observacao'),
+                    status: 'pago',
+                    registradoPor: this.currentUser.id
+                };
+
+                const pagamentos = this.getPagamentos();
+                pagamentoData.id = pagamentos.length > 0 ? Math.max(...pagamentos.map(p => p.id)) + 1 : 1;
+                pagamentoData.createdAt = new Date().toISOString();
+                
+                pagamentos.push(pagamentoData);
+                this.salvarPagamentos(pagamentos);
+
+                alert('Pagamento registrado com sucesso!');
+                form.reset();
+                this.loadDashboardData();
+            }
+
+            loadHistoricoPagamentos() {
+                const pagamentos = this.getPagamentos();
+                const container = document.getElementById('historicoPagamentos');
+                
+                container.innerHTML = pagamentos.map(pagamento => {
+                    const estudante = this.getEstudante(pagamento.estudanteId);
+                    return `
+                        <tr>
+                            <td>${this.formatarData(pagamento.data)}</td>
+                            <td>${estudante?.personalInfo?.nome || 'N/A'}</td>
+                            <td>${pagamento.tipo}</td>
+                            <td class="valor-positivo">${this.formatarMoeda(pagamento.valor)}</td>
+                            <td>${pagamento.metodo}</td>
+                            <td><span class="status-badge status-${pagamento.status}">${this.getStatusText(pagamento.status)}</span></td>
+                            <td>
+                                <button onclick="financeiroSystem.gerarReciboPagamento(${pagamento.id})" class="action-btn primary">Recibo</button>
+                                <button onclick="financeiroSystem.cancelarPagamento(${pagamento.id})" class="action-btn danger">Cancelar</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            registrarDespesa() {
+                const form = document.getElementById('formDespesa');
+                const formData = new FormData(form);
+                
+                const despesaData = {
+                    descricao: formData.get('descricao'),
+                    categoria: formData.get('categoria'),
+                    valor: parseFloat(formData.get('valor')),
+                    data: formData.get('data'),
+                    fornecedor: formData.get('fornecedor'),
+                    observacao: formData.get('observacao'),
+                    registradoPor: this.currentUser.id
+                };
+
+                const despesas = this.getDespesas();
+                despesaData.id = despesas.length > 0 ? Math.max(...despesas.map(d => d.id)) + 1 : 1;
+                despesaData.createdAt = new Date().toISOString();
+                
+                despesas.push(despesaData);
+                this.salvarDespesas(despesas);
+
+                alert('Despesa registrada com sucesso!');
+                form.reset();
+                this.loadDashboardData();
+            }
+
+            loadDespesas() {
+                const despesas = this.getDespesas();
+                const container = document.getElementById('listaDespesas');
+                
+                container.innerHTML = despesas.map(despesa => `
+                    <tr>
+                        <td>${this.formatarData(despesa.data)}</td>
+                        <td>${despesa.descricao}</td>
+                        <td>${despesa.categoria}</td>
+                        <td>${despesa.fornecedor || 'N/A'}</td>
+                        <td class="valor-negativo">${this.formatarMoeda(despesa.valor)}</td>
+                        <td>
+                            <button onclick="financeiroSystem.editarDespesa(${despesa.id})" class="action-btn primary">Editar</button>
+                            <button onclick="financeiroSystem.removerDespesa(${despesa.id})" class="action-btn danger">Remover</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            gerarRelatorio() {
+                const tipo = document.getElementById('relatorioTipo').value;
+                const dataInicio = document.getElementById('relatorioDataInicio').value;
+                const dataFim = document.getElementById('relatorioDataFim').value;
+
+                let conteudo = '';
+
+                switch(tipo) {
+                    case 'fluxo_caixa':
+                        conteudo = this.gerarRelatorioFluxoCaixa(dataInicio, dataFim);
+                        break;
+                    case 'receitas':
+                        conteudo = this.gerarRelatorioReceitas(dataInicio, dataFim);
+                        break;
+                    case 'despesas':
+                        conteudo = this.gerarRelatorioDespesas(dataInicio, dataFim);
+                        break;
+                    case 'mensalidades':
+                        conteudo = this.gerarRelatorioMensalidadesAtraso();
+                        break;
+                }
+
+                document.getElementById('conteudoRelatorio').innerHTML = conteudo;
+                document.getElementById('relatorioContent').style.display = 'block';
+            }
+
+            // Métodos auxiliares
+            getPagamentos() {
+                return JSON.parse(localStorage.getItem('ipmc_pagamentos') || '[]');
+            }
+
+            salvarPagamentos(pagamentos) {
+                localStorage.setItem('ipmc_pagamentos', JSON.stringify(pagamentos));
+            }
+
+            getDespesas() {
+                return JSON.parse(localStorage.getItem('ipmc_despesas') || '[]');
+            }
+
+            salvarDespesas(despesas) {
+                localStorage.setItem('ipmc_despesas', JSON.stringify(despesas));
+            }
+
+            getPagamentosMesAtual() {
+                const pagamentos = this.getPagamentos();
+                const mesAtual = new Date().getMonth() + 1;
+                const anoAtual = new Date().getFullYear();
+                
+                return pagamentos.filter(p => {
+                    const dataPagamento = new Date(p.data);
+                    return dataPagamento.getMonth() + 1 === mesAtual && 
+                           dataPagamento.getFullYear() === anoAtual;
+                });
+            }
+
+            getDespesasMesAtual() {
+                const despesas = this.getDespesas();
+                const mesAtual = new Date().getMonth() + 1;
+                const anoAtual = new Date().getFullYear();
+                
+                return despesas.filter(d => {
+                    const dataDespesa = new Date(d.data);
+                    return dataDespesa.getMonth() + 1 === mesAtual && 
+                           dataDespesa.getFullYear() === anoAtual;
+                });
+            }
+
+            getMensalidadesPendentes() {
+                const mensalidades = this.gerarMensalidades();
+                return mensalidades.filter(m => m.status === 'pendente' || m.status === 'atrasado');
+            }
+
+            gerarMensalidades() {
+                // Gerar mensalidades baseadas nos estudantes e turmas
+                const estudantes = this.getTodosEstudantes();
+                const mensalidades = [];
+
+                estudantes.forEach(estudante => {
+                    for (let mes = 1; mes <= 12; mes++) {
+                        mensalidades.push({
+                            id: mensalidades.length + 1,
+                            estudanteId: estudante.id,
+                            turmaId: estudante.turmaId,
+                            mes: mes,
+                            ano: 2024,
+                            valor: 50000, // Valor padrão
+                            vencimento: `2024-${mes.toString().padStart(2, '0')}-10`,
+                            status: mes < new Date().getMonth() + 1 ? 'pago' : 'pendente'
+                        });
+                    }
+                });
+
+                return mensalidades;
+            }
+
+            getTodosEstudantes() {
+                const estudantesDB = JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+                const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+                
+                return estudantesDB.map(estudante => {
+                    const user = users.find(u => u.id === estudante.userId);
+                    return {
+                        ...estudante,
+                        personalInfo: user.personalInfo
+                    };
+                });
+            }
+
+            getEstudante(estudanteId) {
+                const estudantes = this.getTodosEstudantes();
+                return estudantes.find(e => e.id === estudanteId);
+            }
+
+            getTurma(turmaId) {
+                const turmas = JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+                return turmas.find(t => t.id === turmaId);
+            }
+
+            getStatusText(status) {
+                const statusMap = {
+                    'pago': 'Pago',
+                    'pendente': 'Pendente',
+                    'atrasado': 'Atrasado',
+                    'recebido': 'Recebido'
+                };
+                return statusMap[status] || status;
+            }
+
+            formatarMoeda(valor) {
+                return new Intl.NumberFormat('pt-AO', {
+                    style: 'currency',
+                    currency: 'AOA'
+                }).format(valor);
+            }
+
+            formatarData(dataString) {
+                return new Date(dataString).toLocaleDateString('pt-PT');
+            }
+
+            getNomeMes(mes) {
+                const meses = [
+                    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                ];
+                return meses[mes - 1] || '';
+            }
+
+            // Métodos para ações
+            marcarComoPago(mensalidadeId) {
+                alert(`Mensalidade ${mensalidadeId} marcada como paga!`);
+                this.loadMensalidades();
+                this.loadDashboardData();
+            }
+
+            gerarRecibo(mensalidadeId) {
+                alert(`Gerando recibo para mensalidade ${mensalidadeId}`);
+            }
+
+            gerarReciboPagamento(pagamentoId) {
+                alert(`Gerando recibo para pagamento ${pagamentoId}`);
+            }
+
+            cancelarPagamento(pagamentoId) {
+                if (confirm('Tem certeza que deseja cancelar este pagamento?')) {
+                    alert(`Pagamento ${pagamentoId} cancelado!`);
+                    this.loadHistoricoPagamentos();
+                }
+            }
+
+            editarDespesa(despesaId) {
+                alert(`Editando despesa ${despesaId}`);
+            }
+
+            removerDespesa(despesaId) {
+                if (confirm('Tem certeza que deseja remover esta despesa?')) {
+                    alert(`Despesa ${despesaId} removida!`);
+                    this.loadDespesas();
+                }
+            }
+
+            salvarConfiguracoes() {
+                alert('Configurações salvas com sucesso!');
+            }
+
+            exportarRelatorio() {
+                alert('Relatório exportado para PDF!');
+            }
+
+            // Métodos de relatórios (simplificados)
+            gerarRelatorioFluxoCaixa(dataInicio, dataFim) {
+                return `
+                    <h4>Relatório de Fluxo de Caixa</h4>
+                    <p>Período: ${dataInicio} a ${dataFim}</p>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Receitas Totais</span>
+                            <span class="info-value valor-positivo">${this.formatarMoeda(1500000)}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Despesas Totais</span>
+                            <span class="info-value valor-negativo">${this.formatarMoeda(800000)}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Saldo Líquido</span>
+                            <span class="info-value valor-positivo">${this.formatarMoeda(700000)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            gerarRelatorioReceitas(dataInicio, dataFim) {
+                return `<h4>Relatório de Receitas</h4><p>Em desenvolvimento...</p>`;
+            }
+
+            gerarRelatorioDespesas(dataInicio, dataFim) {
+                return `<h4>Relatório de Despesas</h4><p>Em desenvolvimento...</p>`;
+            }
+
+            gerarRelatorioMensalidadesAtraso() {
+                return `<h4>Relatório de Mensalidades em Atraso</h4><p>Em desenvolvimento...</p>`;
+            }
+        }
+
+        // Função global para logout
+        function logout() {
+            localStorage.removeItem('ipmc_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar sistema financeiro
+        const financeiroSystem = new FinanceiroSystem();
+    </script>
+</body>
+</html>

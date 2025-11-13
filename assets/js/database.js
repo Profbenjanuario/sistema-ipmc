@@ -8,8 +8,8 @@ class Database {
         if (!localStorage.getItem('ipmc_users')) {
             const adminUser = {
                 id: 1,
-                username: 'Benja',
-                password: 'Ben12',
+                username: 'benja',
+                password: 'ben12',
                 profile: 'director',
                 personalInfo: {
                     nome: 'Administrador Sistema',

@@ -32,7 +32,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             backdrop-filter: blur(10px);
             transform: translateY(0);
             transition: all 0.3s ease;
@@ -48,15 +48,39 @@
             margin-bottom: 2rem;
         }
 
-        .logo h1 {
-            color: #333;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+        .logo-image {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        .logo p {
+        .logo h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .logo .instituto-name {
+            color: #667eea;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo .sistema-name {
             color: #666;
             font-size: 1rem;
+            font-weight: 500;
         }
 
         .form-group {
@@ -70,8 +94,7 @@
             font-weight: 600;
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             width: 100%;
             padding: 1rem;
             border: 2px solid #e1e5e9;
@@ -81,8 +104,7 @@
             background: white;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -106,6 +128,10 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
 
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
         .error-message {
             background: #fee;
             color: #c33;
@@ -114,6 +140,27 @@
             margin-bottom: 1rem;
             text-align: center;
             display: none;
+            border: 1px solid #fcc;
+        }
+
+        .helper-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .helper-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin: 0 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .helper-links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
         }
 
         .fade-in {
@@ -121,16 +168,61 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .demo-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            text-align: center;
+            border: 1px solid #e1e5e9;
+        }
+
+        .demo-info h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .demo-info p {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+
+            .logo .instituto-name {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-container fade-in">
         <div class="logo">
-            <h1>IPMC</h1>
-            <p>Sistema Integrado de Gestão Académica</p>
+            <div class="logo-image">IPMC</div>
+            <h1>Sistema Integrado</h1>
+            <div class="instituto-name">Instituto Politécnico Makhetele - Caia</div>
+            <div class="sistema-name">Gestão Académica</div>
         </div>
 
         <div id="errorMessage" class="error-message"></div>
@@ -148,98 +240,91 @@
 
             <button type="submit" class="login-btn">Entrar no Sistema</button>
         </form>
+
+        <div class="demo-info">
+            <h4>👥 Acesso de Demonstração</h4>
+            <p><strong>Director:</strong> Benjanuario / Ben12</p>
+            <p><strong>Secretaria:</strong> secretaria / secretaria123</p>
+        </div>
+
+        <div class="helper-links">
+            <a href="#" onclick="recuperarPassword()">🔓 Recuperar Password</a>
+            <span>•</span>
+            <a href="#" onclick="mostrarTodosUsuarios()">👥 Ver Todos Usuários</a>
+        </div>
     </div>
 
+    <!-- Script de autenticação -->
+    <script src="assets/js/auth.js"></script>
+
     <script>
-        class AuthSystem {
-            constructor() {
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-                this.checkExistingAuth();
-            }
-
-            setupEventListeners() {
-                const loginForm = document.getElementById('loginForm');
-                loginForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.handleLogin();
-                });
-            }
-
-            checkExistingAuth() {
-                const currentUser = localStorage.getItem('ipmc_currentUser');
-                if (currentUser) {
-                    const user = JSON.parse(currentUser);
-                    this.redirectToDashboard(user.profile);
-                }
-            }
-
-            handleLogin() {
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-
+        // Funções auxiliares para a página de login
+        function recuperarPassword() {
+            const username = prompt('Digite seu username para recuperação de password:');
+            if (username) {
                 const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
-                const user = users.find(u => 
-                    u.username === username && 
-                    u.password === password
-                );
-
+                const user = users.find(u => u.username === username);
+                
                 if (user) {
-                    // Salvar usuário atual
-                    localStorage.setItem('ipmc_currentUser', JSON.stringify(user));
-                    this.redirectToDashboard(user.profile);
+                    alert(`🔐 Password para ${username}: ${user.password}\n\n💡 Por questões de segurança, altere sua password após o login.`);
                 } else {
-                    this.showError('Credenciais inválidas. Verifique username e password.');
+                    alert('❌ Username não encontrado!');
                 }
-            }
-
-            redirectToDashboard(profile) {
-                // Efeito de transição
-                document.querySelector('.login-container').style.transform = 'translateY(-20px)';
-                document.querySelector('.login-container').style.opacity = '0';
-                
-                setTimeout(() => {
-                    switch(profile) {
-                        case 'secretaria':
-                            window.location.href = 'secretaria.html';
-                            break;
-                        case 'pedagogico':
-                            window.location.href = 'pedagogico.html';
-                            break;
-                        case 'director':
-                            window.location.href = 'director.html';
-                            break;
-                        case 'tutor':
-                            window.location.href = 'tutor.html';
-                            break;
-                        case 'estudante':
-                            window.location.href = 'estudante.html';
-                            break;
-                        case 'financeiro':
-                            window.location.href = 'financeiro.html';
-                            break;
-                        default:
-                            window.location.href = 'index.html';
-                    }
-                }, 300);
-            }
-
-            showError(message) {
-                const errorDiv = document.getElementById('errorMessage');
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                }, 5000);
             }
         }
 
-        // Inicializar sistema de autenticação
-        new AuthSystem();
+        function mostrarTodosUsuarios() {
+            const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+            let mensagem = '👥 USUÁRIOS DISPONÍVEIS:\n\n';
+            
+            users.forEach(user => {
+                mensagem += `👤 ${user.personalInfo.nome}\n`;
+                mensagem += `   📧 Username: ${user.username}\n`;
+                mensagem += `   🔑 Password: ${user.password}\n`;
+                mensagem += `   🎯 Perfil: ${user.profile}\n`;
+                mensagem += `   📞 Contacto: ${user.personalInfo.contacto}\n`;
+                mensagem += '   ─────────────────────\n';
+            });
+            
+            mensagem += '\n💡 DICA: Use "Benjanuario" para acessar como Director!';
+            
+            alert(mensagem);
+        }
+
+        // Verificar se o sistema foi inicializado corretamente
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔐 Sistema IPMC - Instituto Politécnico Makhetele - Caia');
+            
+            // Verificar se existem usuários
+            const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+            if (users.length === 0) {
+                console.log('⚠️ Nenhum usuário encontrado. O sistema será inicializado...');
+            } else {
+                console.log(`✅ ${users.length} usuários carregados no sistema`);
+            }
+
+            // Adicionar foco automático no campo username
+            const usernameField = document.getElementById('username');
+            if (usernameField) {
+                setTimeout(() => {
+                    usernameField.focus();
+                }, 500);
+            }
+        });
+
+        // Adicionar efeito de loading no botão de login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const button = this.querySelector('.login-btn');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '🔐 Autenticando...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 2000);
+        });
     </script>
 </body>
 </html>

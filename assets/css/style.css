@@ -508,4 +508,253 @@ body {
     display: flex;
     gap: 0.5rem;
     }
+/* Estilos específicos para a secretaria */
+.disciplinas-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+}
+
+.disciplina-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #e1e5e9;
+}
+
+.remove-disciplina {
+    background: #dc3545;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-disciplina-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+
+.add-disciplina-btn:hover {
+    background: #218838;
+}
+
+/* Cursos Grid */
+.cursos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.curso-card {
+    background: white;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+}
+
+.curso-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.curso-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.curso-header h3 {
+    margin: 0;
+    color: #333;
+    flex: 1;
+}
+
+.curso-codigo {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.curso-info {
+    margin-bottom: 1rem;
+}
+
+.curso-info p {
+    margin: 0.5rem 0;
+    color: #666;
+}
+
+.curso-disciplinas {
+    margin-bottom: 1rem;
+}
+
+.curso-disciplinas h4 {
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.curso-disciplinas ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.curso-disciplinas li {
+    padding: 0.25rem 0;
+    font-size: 0.85rem;
+    color: #666;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.curso-disciplinas li:last-child {
+    border-bottom: none;
+}
+
+.curso-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* Turmas Grid */
+.turmas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.turma-card {
+    background: white;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+}
+
+.turma-card.pendente {
+    border-left: 4px solid #ffc107;
+}
+
+.turma-card.validada {
+    border-left: 4px solid #28a745;
+}
+
+.turma-card.recusada {
+    border-left: 4px solid #dc3545;
+}
+
+.turma-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.turma-header h3 {
+    margin: 0;
+    color: #333;
+    flex: 1;
+}
+
+.turma-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.turma-status.pendente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.turma-status.validada {
+    background: #d4edda;
+    color: #155724;
+}
+
+.turma-status.recusada {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.turma-info p {
+    margin: 0.5rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.turma-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e1e5e9;
+}
+
+.status-info {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-info.success {
+    color: #28a745;
+}
+
+.status-info.danger {
+    color: #dc3545;
+}
+
+.tutor-info {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Filtros */
+.filtros-turmas {
+    margin-bottom: 1.5rem;
+}
+
+.filtros-turmas select {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.activity-status {
+    text-align: right;
+}
+
+.status-badge.pendente {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
 }

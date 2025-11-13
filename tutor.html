@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMC - Portal do Tutor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #7e22ce;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7e22ce 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            overflow-x: hidden;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-logout {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .dashboard-main {
+            display: flex;
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+            gap: 30px;
+        }
+
+        .sidebar {
+            flex: 0 0 280px;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar h3 {
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: var(--radius);
+            color: var(--gray-800);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Componentes específicos do Tutor */
+        .welcome-card {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        }
+
+        .tutor-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: var(--radius);
+            backdrop-filter: blur(10px);
+        }
+
+        .info-item label {
+            font-size: 12px;
+            opacity: 0.8;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-item span {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .icon-primary { background: var(--gradient-primary); }
+        .icon-success { background: var(--gradient-success); }
+        .icon-warning { background: var(--gradient-warning); }
+        .icon-accent { background: var(--gradient-accent); }
+        .icon-danger { background: var(--gradient-danger); }
+
+        .stat-info h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: var(--gray-800);
+            font-size: 14px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            color: var(--primary-dark);
+            font-size: 24px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--gradient-primary); color: white; }
+        .btn-success { background: var(--gradient-success); color: white; }
+        .btn-warning { background: var(--gradient-warning); color: white; }
+        .btn-danger { background: var(--gradient-danger); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: var(--gray-50);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-800);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success { background: var(--success); color: white; }
+        .badge-warning { background: var(--warning); color: white; }
+        .badge-danger { background: var(--danger); color: white; }
+        .badge-info { background: var(--accent); color: white; }
+        .badge-secondary { background: var(--secondary); color: white; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: var(--primary-dark);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray-600);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group-modal {
+            margin-bottom: 15px;
+        }
+
+        .form-group-modal label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .form-control-modal {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-modal:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .notas-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .notas-header {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 10px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 1024px) {
+            .dashboard-main {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tutor-info {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        /* Animações */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard" id="dashboard">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-logo">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div>
+                        <h2>IPMC - Portal do Tutor</h2>
+                        <p id="userRoleDisplay">Gestão Académica e Pedagógica</p>
+                    </div>
+                </div>
+                
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">CS</div>
+                    <div>
+                        <div id="userName">Dr. Carlos Santos</div>
+                        <button onclick="logout()" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="dashboard-main">
+            <aside class="sidebar">
+                <h3>Menu do Tutor</h3>
+                <nav class="sidebar-nav">
+                    <div class="nav-item active" data-tab="dashboard">
+                        <i class="fas fa-home"></i> Dashboard
+                    </div>
+                    <div class="nav-item" data-tab="disciplinas">
+                        <i class="fas fa-book"></i> Minhas Disciplinas
+                    </div>
+                    <div class="nav-item" data-tab="estudantes">
+                        <i class="fas fa-users"></i> Lista de Estudantes
+                    </div>
+                    <div class="nav-item" data-tab="notas">
+                        <i class="fas fa-chart-bar"></i> Lançamento de Notas
+                    </div>
+                    <div class="nav-item" data-tab="pautas">
+                        <i class="fas fa-clipboard-list"></i> Gestão de Pautas
+                    </div>
+                    <div class="nav-item" data-tab="presencas">
+                        <i class="fas fa-clipboard-check"></i> Registo de Presenças
+                    </div>
+                    <div class="nav-item" data-tab="materiais">
+                        <i class="fas fa-file-upload"></i> Materiais de Aula
+                    </div>
+                    <div class="nav-item" data-tab="estagios">
+                        <i class="fas fa-briefcase"></i> Orientação de Estágios
+                    </div>
+                    <div class="nav-item" data-tab="relatorios">
+                        <i class="fas fa-chart-line"></i> Relatórios
+                    </div>
+                </nav>
+            </aside>
+            
+            <section class="content">
+                <!-- Dashboard -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="welcome-card fade-in">
+                        <h2>Bem-vindo, <span id="welcomeName">Dr. Carlos</span>!</h2>
+                        <p>Tenha um excelente dia de trabalho no Instituto Politécnico Makhetele - Caia</p>
+                        
+                        <div class="tutor-info">
+                            <div class="info-item">
+                                <label>Departamento</label>
+                                <span>Informática</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Categoria</label>
+                                <span>Professor Auxiliar</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Ano Lectivo</label>
+                                <span>2024</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Disciplinas</label>
+                                <span>4 Disciplinas</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card fade-in">
+                            <div class="stat-icon icon-primary">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>4</h3>
+                                <p>Disciplinas Ativas</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card fade-in">
+                            <div class="stat-icon icon-success">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>142</h3>
+                                <p>Estudantes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card fade-in">
+                            <div class="stat-icon icon-warning">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>8</h3>
+                                <p>Avaliações Pendentes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card fade-in">
+                            <div class="stat-icon icon-danger">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>3</h3>
+                                <p>Pautas por Fechar</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2>Actividades Recentes</h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Próximas Aulas</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                            </div>
+                            <div id="proximas-aulas-tutor">
+                                <!-- Carregado via JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Prazos de Avaliação</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                            </div>
+                            <div id="prazos-avaliacao">
+                                <!-- Carregado via JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Estágios para Avaliar</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                            </div>
+                            <div id="estagios-avaliar">
+                                <!-- Carregado via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disciplinas -->
+                <div id="disciplinas-tab" class="tab-content">
+                    <div class="section-header">
+                        <h2>Minhas Disciplinas</h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="abrirModalDisciplina()">
+                                <i class="fas fa-plus"></i> Nova Disciplina
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Disciplina</th>
+                                    <th>Código</th>
+                                    <th>Curso</th>
+                                    <th>Turma</th>
+                                    <th>Estudantes</th>
+                                    <th>Estado</th>
+                                    <th>Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-disciplinas">
+                                <!-- Carregado via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Lista de Estudantes -->
+                <div id="estudantes-tab" class="tab-content">
+                    <div class="section-header">
+                        <h2>Lista de Estudantes</h2>
+                        <div class="action-buttons">
+                            <select id="filtro-disciplina" class="form-control-modal" style="width: 200px;">
+                                <option value="">Todas as Disciplinas</option>
+                            </select>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nº Estudante</th>
+                                    <th>Nome</th>
+                                    <th>Curso</th>
+                                    <th>Email</th>
+                                    <th>Contacto</th>
+                                    <th>Estado</th>
+                                    <th>Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-estudantes">
+                                <!-- Carregado via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Lançamento de Notas -->
+                <div id="notas-tab" class="tab-content">
+                    <div class="section-header">
+                        <h2>Lançamento de Notas</h2>
+                        <div class="action-buttons">
+                            <select id="disciplina-notas" class="form-control-modal" style="width: 200px;">
+                                <option value="">Selecionar Disciplina</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="lancarNotasEmLote()">
+                                <i class="fas fa-save"></i> Guardar Todas
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="notas-grid notas-header">
+                            <div>Estudante</div>
+                            <div>Teste 1</div>
+                            <div>Teste 2</div>
+                            <div>Trabalho</div>
+                            <div>Exame</div>
+                            <div>Final</div>
+                        </div>
+                        <div id="lista-lancamento-notas">
+                            <!-- Carregado via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestão de Pautas -->
+                <div id="pautas-tab" class="tab-content">
+                    <div class="section-header">
+                        <h2>Gestão de Pautas</h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-success" onclick="fecharPauta()">
+                                <i class="fas fa-lock"></i> Fechar Pauta
+                            </button>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-print"></i> Imprimir
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Disciplina</th>
+                                    <th>Turma</th>
+                                    <th>Estudantes</th>
+                                    <th>Nota Média</th>
+                                    <th>Estado</th>
+                                    <th>Data Fecho</th>
+                                    <th>Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-pautas">
+                                <!-- Carregado via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Outras abas serão implementadas -->
+                
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Lançamento de Notas -->
+    <div id="modalNotas" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Lançar Notas Individuais</h3>
+                <button class="close-modal" onclick="fecharModal('modalNotas')">&times;</button>
+            </div>
+            <div id="conteudo-modal-notas">
+                <!-- Conteúdo dinâmico -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados de exemplo para o tutor
+        const tutorData = {
+            nome: "Dr. Carlos Santos",
+            departamento: "Informática",
+            categoria: "Professor Auxiliar",
+            email: "carlos.santos@ipmc.edu.mz",
+            disciplinas: [
+                { 
+                    id: 1, 
+                    nome: "Programação Web", 
+                    codigo: "IG201", 
+                    curso: "Informática de Gestão", 
+                    turma: "T1", 
+                    estudantes: 35,
+                    estado: "Ativa",
+                    horario: "Segunda 08:00-09:30, Quarta 11:30-13:00"
+                },
+                { 
+                    id: 2, 
+                    nome: "Base de Dados", 
+                    codigo: "IG202", 
+                    curso: "Informática de Gestão", 
+                    turma: "T1", 
+                    estudantes: 35,
+                    estado: "Ativa",
+                    horario: "Quarta 08:00-09:30, Sexta 14:00-15:30"
+                }
+            ],
+            estudantes: [
+                { numero: "EST2023001", nome: "João Silva", curso: "Informática de Gestão", email: "joao@ipmc.edu.mz", contacto: "84 123 4567", estado: "Ativo" },
+                { numero: "EST2023002", nome: "Maria João", curso: "Informática de Gestão", email: "maria@ipmc.edu.mz", contacto: "85 234 5678", estado: "Ativo" }
+            ],
+            pautas: [
+                { disciplina: "Programação Web", turma: "T1", estudantes: 35, media: 14.2, estado: "Aberta", dataFecho: "" },
+                { disciplina: "Base de Dados", turma: "T1", estudantes: 35, media: 13.8, estado: "Aberta", dataFecho: "" }
+            ],
+            proximasAulas: [
+                { disciplina: "Programação Web", data: "Hoje", hora: "08:00", sala: "Lab 3", turma: "T1" },
+                { disciplina: "Base de Dados", data: "Quarta-feira", hora: "08:00", sala: "S105", turma: "T1" }
+            ],
+            prazos: [
+                { descricao: "Fecho pauta Programação Web", data: "20 Jun 2024", tipo: "urgente" },
+                { descricao: "Entrega notas Teste 2 - BD", data: "25 Jun 2024", tipo: "importante" }
+            ],
+            estagios: [
+                { estudante: "João Silva", empresa: "Tech Solutions", tipo: "Integral", estado: "Para Avaliar" }
+            ]
+        };
+
+        // Inicializar módulo do tutor
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (currentUser && currentUser.type === 'tutor') {
+                initTutorModule(currentUser);
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        function initTutorModule(user) {
+            // Atualizar interface
+            document.getElementById('userName').textContent = user.nome;
+            document.getElementById('welcomeName').textContent = user.nome.split(' ')[1];
+            document.getElementById('userAvatar').textContent = getInitials(user.nome);
+            document.getElementById('userRoleDisplay').textContent = `Portal do Tutor - ${user.departamento}`;
+
+            // Carregar dados
+            carregarDadosTutor();
+            setupNavigation();
+        }
+
+        function carregarDadosTutor() {
+            // Atualizar informações
+            document.querySelectorAll('.info-item')[0].querySelector('span').textContent = tutorData.departamento;
+            document.querySelectorAll('.info-item')[1].querySelector('span').textContent = tutorData.categoria;
+            
+            // Carregar componentes
+            carregarProximasAulas();
+            carregarPrazosAvaliacao();
+            carregarEstagiosAvaliar();
+            carregarDisciplinas();
+            carregarEstudantes();
+            carregarPautas();
+            carregarOpcoesDisciplinas();
+        }
+
+        function carregarProximasAulas() {
+            const container = document.getElementById('proximas-aulas-tutor');
+            container.innerHTML = tutorData.proximasAulas.map(aula => `
+                <div style="padding: 10px 0; border-bottom: 1px solid var(--gray-100);">
+                    <div style="font-weight: 600;">${aula.disciplina}</div>
+                    <div style="font-size: 12px; color: var(--gray-800);">
+                        <i class="fas fa-calendar"></i> ${aula.data} | 
+                        <i class="fas fa-clock"></i> ${aula.hora} | 
+                        <i class="fas fa-door-open"></i> ${aula.sala} |
+                        <i class="fas fa-users"></i> ${aula.turma}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function carregarPrazosAvaliacao() {
+            const container = document.getElementById('prazos-avaliacao');
+            container.innerHTML = tutorData.prazos.map(prazo => `
+                <div style="padding: 10px 0; border-bottom: 1px solid var(--gray-100);">
+                    <div style="font-weight: 600;">${prazo.descricao}</div>
+                    <div style="font-size: 12px; color: var(--gray-800);">
+                        <i class="fas fa-clock"></i> ${prazo.data}
+                        <span class="badge ${prazo.tipo === 'urgente' ? 'badge-danger' : 'badge-warning'}" style="float: right;">
+                            ${prazo.tipo}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function carregarEstagiosAvaliar() {
+            const container = document.getElementById('estagios-avaliar');
+            container.innerHTML = tutorData.estagios.map(estagio => `
+                <div style="padding: 10px 0; border-bottom: 1px solid var(--gray-100);">
+                    <div style="font-weight: 600;">${estagio.estudante}</div>
+                    <div style="font-size: 12px; color: var(--gray-800);">
+                        ${estagio.empresa} - ${estagio.tipo}
+                        <span class="badge ${estagio.estado === 'Para Avaliar' ? 'badge-warning' : 'badge-success'}" style="float: right;">
+                            ${estagio.estado}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function carregarDisciplinas() {
+            const container = document.getElementById('tabela-disciplinas');
+            container.innerHTML = tutorData.disciplinas.map(disciplina => `
+                <tr>
+                    <td>${disciplina.nome}</td>
+                    <td>${disciplina.codigo}</td>
+                    <td>${disciplina.curso}</td>
+                    <td>${disciplina.turma}</td>
+                    <td>${disciplina.estudantes}</td>
+                    <td><span class="badge badge-success">${disciplina.estado}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="verDetalhesDisciplina(${disciplina.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function carregarEstudantes() {
+            const container = document.getElementById('tabela-estudantes');
+            container.innerHTML = tutorData.estudantes.map(estudante => `
+                <tr>
+                    <td>${estudante.numero}</td>
+                    <td>${estudante.nome}</td>
+                    <td>${estudante.curso}</td>
+                    <td>${estudante.email}</td>
+                    <td>${estudante.contacto}</td>
+                    <td><span class="badge badge-success">${estudante.estado}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="verPerfilEstudante('${estudante.numero}')">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="lancarNotaIndividual('${estudante.numero}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function carregarPautas() {
+            const container = document.getElementById('tabela-pautas');
+            container.innerHTML = tutorData.pautas.map(pauta => `
+                <tr>
+                    <td>${pauta.disciplina}</td>
+                    <td>${pauta.turma}</td>
+                    <td>${pauta.estudantes}</td>
+                    <td>${pauta.media}</td>
+                    <td>
+                        <span class="badge ${pauta.estado === 'Aberta' ? 'badge-warning' : 'badge-success'}">
+                            ${pauta.estado}
+                        </span>
+                    </td>
+                    <td>${pauta.dataFecho || '-'}</td>
+                    <td>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline btn-sm" ${pauta.estado === 'Fechada' ? 'disabled' : ''}>
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function carregarOpcoesDisciplinas() {
+            const select = document.getElementById('filtro-disciplina');
+            select.innerHTML = '<option value="">Todas as Disciplinas</option>' +
+                tutorData.disciplinas.map(d => `<option value="${d.id}">${d.nome} - ${d.turma}</option>`).join('');
+            
+            const selectNotas = document.getElementById('disciplina-notas');
+            selectNotas.innerHTML = '<option value="">Selecionar Disciplina</option>' +
+                tutorData.disciplinas.map(d => `<option value="${d.id}">${d.nome} - ${d.turma}</option>`).join('');
+        }
+
+        // Funções de navegação
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    const tabId = this.getAttribute('data-tab') + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // Funções específicas do tutor
+        function abrirModalDisciplina() {
+            alert('Funcionalidade de adicionar disciplina será implementada!');
+        }
+
+        function fecharModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function verDetalhesDisciplina(id) {
+            const disciplina = tutorData.disciplinas.find(d => d.id === id);
+            alert(`Detalhes da disciplina: ${disciplina.nome}\nHorário: ${disciplina.horario}`);
+        }
+
+        function verPerfilEstudante(numero) {
+            const estudante = tutorData.estudantes.find(e => e.numero === numero);
+            alert(`Perfil do estudante: ${estudante.nome}\nCurso: ${estudante.curso}\nContacto: ${estudante.contacto}`);
+        }
+
+        function lancarNotaIndividual(numero) {
+            document.getElementById('modalNotas').style.display = 'flex';
+            const estudante = tutorData.estudantes.find(e => e.numero === numero);
+            
+            document.getElementById('conteudo-modal-notas').innerHTML = `
+                <h4>Lançar notas para ${estudante.nome}</h4>
+                <div class="form-group-modal">
+                    <label>Disciplina</label>
+                    <select class="form-control-modal">
+                        ${tutorData.disciplinas.map(d => `<option value="${d.id}">${d.nome}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group-modal">
+                        <label>Teste 1</label>
+                        <input type="number" class="form-control-modal" min="0" max="20" step="0.5">
+                    </div>
+                    <div class="form-group-modal">
+                        <label>Teste 2</label>
+                        <input type="number" class="form-control-modal" min="0" max="20" step="0.5">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group-modal">
+                        <label>Trabalho</label>
+                        <input type="number" class="form-control-modal" min="0" max="20" step="0.5">
+                    </div>
+                    <div class="form-group-modal">
+                        <label>Exame</label>
+                        <input type="number" class="form-control-modal" min="0" max="20" step="0.5">
+                    </div>
+                </div>
+                <div class="action-buttons" style="margin-top: 20px;">
+                    <button class="btn btn-success" onclick="guardarNotaIndividual('${numero}')">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button class="btn btn-outline" onclick="fecharModal('modalNotas')">
+                        Cancelar
+                    </button>
+                </div>
+            `;
+        }
+
+        function guardarNotaIndividual(numero) {
+            alert(`Notas do estudante ${numero} guardadas com sucesso!`);
+            fecharModal('modalNotas');
+        }
+
+        function lancarNotasEmLote() {
+            alert('Funcionalidade de lançamento em lote será implementada!');
+        }
+
+        function fecharPauta() {
+            alert('Funcionalidade de fecho de pauta será implementada!');
+        }
+
+        // Funções utilitárias
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

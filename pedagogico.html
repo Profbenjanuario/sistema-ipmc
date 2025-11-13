@@ -599,6 +599,158 @@
                                 <p>Pautas por Validar</p>
                             </div>
                         </div>
+                        <!-- ADICIONAR ESTAS ABAS NO MENU PEDAGÓGICO -->
+<div class="nav-item" data-tab="aprovacoes">
+    <i class="fas fa-check-circle"></i> Aprovações Pendentes
+</div>
+<div class="nav-item" data-tab="atribuicoes">
+    <i class="fas fa-user-tie"></i> Atribuição de Tutores
+</div>
+
+<!-- CONTEÚDO DA ABA APROVAÇÕES -->
+<div id="aprovacoes-tab" class="tab-content">
+    <div class="section-header">
+        <h2>Aprovações Pendentes</h2>
+        <div class="action-buttons">
+            <button class="btn btn-outline" onclick="carregarAprovacoes()">
+                <i class="fas fa-sync"></i> Actualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Cursos Pendentes -->
+    <div class="card" style="margin-bottom: 30px;">
+        <div class="card-header">
+            <h3 class="card-title">Cursos Pendentes de Aprovação</h3>
+            <div class="card-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome do Curso</th>
+                        <th>Duração</th>
+                        <th>Data Submissão</th>
+                        <th>Acções</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-cursos-pendentes">
+                    <!-- Carregado via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Turmas Pendentes -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Turmas Pendentes de Aprovação</h3>
+            <div class="card-icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Curso</th>
+                        <th>Ano</th>
+                        <th>Turma</th>
+                        <th>Capacidade</th>
+                        <th>Data Submissão</th>
+                        <th>Acções</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-turmas-pendentes">
+                    <!-- Carregado via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- CONTEÚDO DA ABA ATRIBUIÇÕES -->
+<div id="atribuicoes-tab" class="tab-content">
+    <div class="section-header">
+        <h2>Atribuição de Tutores a Turmas</h2>
+        <div class="action-buttons">
+            <button class="btn btn-outline" onclick="carregarAtribuicoes()">
+                <i class="fas fa-sync"></i> Actualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Turmas Aprovadas sem Tutor -->
+    <div class="card" style="margin-bottom: 30px;">
+        <div class="card-header">
+            <h3 class="card-title">Turmas Aprovadas sem Tutor</h3>
+            <div class="card-icon">
+                <i class="fas fa-user-times"></i>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Curso</th>
+                        <th>Ano</th>
+                        <th>Turma</th>
+                        <th>Turno</th>
+                        <th>Acções</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-turmas-sem-tutor">
+                    <!-- Carregado via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Atribuições Activas -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Atribuições Activas</h3>
+            <div class="card-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Turma</th>
+                        <th>Tutor</th>
+                        <th>Departamento</th>
+                        <th>Disciplinas</th>
+                        <th>Data Atribuição</th>
+                        <th>Acções</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-atribuicoes-ativas">
+                    <!-- Carregado via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA ATRIBUIR TUTOR -->
+<div id="modalAtribuirTutor" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Atribuir Tutor à Turma</h3>
+            <button class="close-modal" onclick="fecharModal('modalAtribuirTutor')">&times;</button>
+        </div>
+        <div id="conteudo-atribuicao">
+            <!-- Preenchido via JavaScript -->
+        </div>
+    </div>
+</div>
                         
                         <div class="stat-card fade-in">
                             <div class="stat-icon icon-danger">
@@ -923,6 +1075,31 @@
             sessionStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         }
+        // Gestão de Aprovações e Atribuições - Pedagógico
+function carregarAprovacoes() {
+    carregarCursosPendentes();
+    carregarTurmasPendentes();
+}
+
+function carregarAtribuicoes() {
+    carregarTurmasSemTutor();
+    carregarAtribuicoesAtivas();
+}
+
+function carregarCursosPendentes() {
+    const cursos = ipmcDB.getCursos('pendente');
+    const container = document.getElementById('tabela-cursos-pendentes');
+    
+    container.innerHTML = cursos.map(curso => `
+        <tr>
+            <td><strong>${curso.codigo}</strong></td>
+            <td>${curso.nome}</td>
+            <td>${curso.duracao} anos</td>
+            <td>${formatarData(curso.dataCriacao)}</td>
+            <td>
+                <button class="btn btn-success btn-sm" onclick="aprovarCurso(${curso.id})">
+                    <i class="fas fa-check"></i> Aprovar
+                </button>
     </script>
 </body>
 </html>

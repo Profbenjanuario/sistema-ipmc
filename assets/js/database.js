@@ -1,283 +1,154 @@
-// Sistema de Base de Dados LocalStorage - ATUALIZADO
-class IPMCDatabase {
+class Database {
     constructor() {
         this.init();
     }
 
     init() {
-        if (!localStorage.getItem('ipmc_database')) {
-            const database = {
-                users: {
-                    "admin": { 
-                        password: "admin123", 
-                        type: "secretaria", 
-                        nome: "Administrador do Sistema",
-                        email: "admin@ipmc.edu.mz"
-                    },
-                    "est2023001": { 
-                        password: "123", 
-                        type: "estudante", 
-                        nome: "João Silva",
-                        email: "joao.silva@ipmc.edu.mz",
-                        curso: "Informática de Gestão",
-                        ano: 2,
-                        turma: "IG2-T1"
-                    },
-                    "tut2023001": { 
-                        password: "123", 
-                        type: "tutor", 
-                        nome: "Dr. Carlos Santos",
-                        email: "carlos.santos@ipmc.edu.mz",
-                        departamento: "Informática",
-                        categoria: "Professor Auxiliar"
-                    },
-                    "sec2023001": { 
-                        password: "123", 
-                        type: "secretaria", 
-                        nome: "Maria Fernandes",
-                        email: "maria.fernandes@ipmc.edu.mz"
-                    },
-                    "ped2023001": { 
-                        password: "123", 
-                        type: "pedagogico", 
-                        nome: "Dr. António Muchanga",
-                        email: "antonio.muchanga@ipmc.edu.mz"
-                    }
+        // Inicializar dados se não existirem
+        if (!localStorage.getItem('ipmc_users')) {
+            const adminUser = {
+                id: 1,
+                username: 'admin',
+                password: 'admin123',
+                profile: 'director',
+                personalInfo: {
+                    nome: 'Administrador Sistema',
+                    formacao: 'Gestão de Sistemas',
+                    dataNascimento: '1980-01-01',
+                    residencia: 'IPMC',
+                    contacto: '+244 900 000 000',
+                    email: 'admin@ipmc.ao',
+                    bilheteIdentidade: '000000000LA000'
                 },
-                
-                // NOVA ESTRUTURA DE CURSOS E TURMAS
-                cursos: [
-                    {
-                        id: 1,
-                        codigo: "IG",
-                        nome: "Informática de Gestão",
-                        duracao: 3,
-                        estado: "aprovado",
-                        dataCriacao: "2024-01-15",
-                        criadoPor: "sec2023001"
-                    },
-                    {
-                        id: 2,
-                        codigo: "AG",
-                        nome: "Agronomia", 
-                        duracao: 3,
-                        estado: "aprovado",
-                        dataCriacao: "2024-01-16",
-                        criadoPor: "sec2023001"
-                    }
-                ],
-                
-                disciplinas: [
-                    {
-                        id: 1,
-                        codigo: "IG101",
-                        nome: "Programação Web",
-                        cursoId: 1,
-                        ano: 1,
-                        semestre: 1,
-                        creditos: 6,
-                        estado: "aprovado"
-                    },
-                    {
-                        id: 2, 
-                        codigo: "IG102",
-                        nome: "Base de Dados",
-                        cursoId: 1,
-                        ano: 1, 
-                        semestre: 1,
-                        creditos: 6,
-                        estado: "aprovado"
-                    },
-                    {
-                        id: 3,
-                        codigo: "AG101",
-                        nome: "Agricultura Geral",
-                        cursoId: 2,
-                        ano: 1,
-                        semestre: 1, 
-                        creditos: 5,
-                        estado: "aprovado"
-                    }
-                ],
-                
-                turmas: [
-                    {
-                        id: 1,
-                        codigo: "IG1-T1",
-                        cursoId: 1,
-                        ano: 1,
-                        turma: "T1",
-                        capacidade: 40,
-                        estudantes: 35,
-                        tutorId: "",
-                        estado: "pendente", // pendente, aprovada, ativa, inativa
-                        turno: "manha",
-                        criadoPor: "sec2023001",
-                        dataCriacao: "2024-01-20"
-                    },
-                    {
-                        id: 2,
-                        codigo: "AG1-T1", 
-                        cursoId: 2,
-                        ano: 1,
-                        turma: "T1",
-                        capacidade: 35,
-                        estudantes: 0,
-                        tutorId: "",
-                        estado: "pendente",
-                        turno: "tarde",
-                        criadoPor: "sec2023001", 
-                        dataCriacao: "2024-01-20"
-                    }
-                ],
-                
-                atribuicoesTutores: [
-                    // Será preenchido quando pedagogico atribuir tutores
-                ],
-                
-                estudantes: [],
-                inscricoes: [],
-                notas: [],
-                pautas: [],
-                exames: [],
-                estagios: [],
-                propinas: [],
-                pagamentos: []
+                createdAt: new Date().toISOString()
             };
-            localStorage.setItem('ipmc_database', JSON.stringify(database));
+            
+            localStorage.setItem('ipmc_users', JSON.stringify([adminUser]));
+        }
+
+        if (!localStorage.getItem('ipmc_cursos')) {
+            localStorage.setItem('ipmc_cursos', JSON.stringify([]));
+        }
+
+        if (!localStorage.getItem('ipmc_turmas')) {
+            localStorage.setItem('ipmc_turmas', JSON.stringify([]));
+        }
+
+        if (!localStorage.getItem('ipmc_estudantes')) {
+            localStorage.setItem('ipmc_estudantes', JSON.stringify([]));
+        }
+
+        if (!localStorage.getItem('ipmc_avaliacoes')) {
+            localStorage.setItem('ipmc_avaliacoes', JSON.stringify([]));
         }
     }
 
-    getDatabase() {
-        return JSON.parse(localStorage.getItem('ipmc_database'));
+    // Users
+    getUsers() {
+        return JSON.parse(localStorage.getItem('ipmc_users') || '[]');
     }
 
-    saveDatabase(database) {
-        localStorage.setItem('ipmc_database', JSON.stringify(database));
+    saveUsers(users) {
+        localStorage.setItem('ipmc_users', JSON.stringify(users));
     }
 
-    // MÉTODOS PARA CURSOS
+    addUser(user) {
+        const users = this.getUsers();
+        user.id = this.generateId(users);
+        user.createdAt = new Date().toISOString();
+        users.push(user);
+        this.saveUsers(users);
+        return user;
+    }
+
+    getUserByUsername(username) {
+        const users = this.getUsers();
+        return users.find(user => user.username === username);
+    }
+
+    // Cursos
+    getCursos() {
+        return JSON.parse(localStorage.getItem('ipmc_cursos') || '[]');
+    }
+
+    saveCursos(cursos) {
+        localStorage.setItem('ipmc_cursos', JSON.stringify(cursos));
+    }
+
     addCurso(curso) {
-        const database = this.getDatabase();
-        curso.id = Date.now();
-        curso.estado = "pendente";
-        curso.dataCriacao = new Date().toISOString().split('T')[0];
-        database.cursos.push(curso);
-        this.saveDatabase(database);
+        const cursos = this.getCursos();
+        curso.id = this.generateId(cursos);
+        curso.createdAt = new Date().toISOString();
+        cursos.push(curso);
+        this.saveCursos(cursos);
         return curso;
     }
 
-    getCursos(estado = null) {
-        const database = this.getDatabase();
-        if (estado) {
-            return database.cursos.filter(curso => curso.estado === estado);
-        }
-        return database.cursos;
+    // Turmas
+    getTurmas() {
+        return JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
     }
 
-    updateCursoEstado(cursoId, estado) {
-        const database = this.getDatabase();
-        const curso = database.cursos.find(c => c.id == cursoId);
-        if (curso) {
-            curso.estado = estado;
-            this.saveDatabase(database);
-        }
+    saveTurmas(turmas) {
+        localStorage.setItem('ipmc_turmas', JSON.stringify(turmas));
     }
 
-    // MÉTODOS PARA DISCIPLINAS
-    addDisciplina(disciplina) {
-        const database = this.getDatabase();
-        disciplina.id = Date.now();
-        disciplina.estado = "pendente";
-        database.disciplinas.push(disciplina);
-        this.saveDatabase(database);
-        return disciplina;
-    }
-
-    getDisciplinasPorCurso(cursoId) {
-        const database = this.getDatabase();
-        return database.disciplinas.filter(d => d.cursoId == cursoId);
-    }
-
-    // MÉTODOS PARA TURMAS
     addTurma(turma) {
-        const database = this.getDatabase();
-        turma.id = Date.now();
-        turma.estado = "pendente";
-        turma.estudantes = 0;
-        turma.tutorId = "";
-        turma.dataCriacao = new Date().toISOString().split('T')[0];
-        database.turmas.push(turma);
-        this.saveDatabase(database);
+        const turmas = this.getTurmas();
+        turma.id = this.generateId(turmas);
+        turma.createdAt = new Date().toISOString();
+        turmas.push(turma);
+        this.saveTurmas(turmas);
         return turma;
     }
 
-    getTurmas(estado = null) {
-        const database = this.getDatabase();
-        if (estado) {
-            return database.turmas.filter(turma => turma.estado === estado);
-        }
-        return database.turmas;
+    // Estudantes
+    getEstudantes() {
+        return JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
     }
 
-    getTurmasPorTutor(tutorId) {
-        const database = this.getDatabase();
-        return database.turmas.filter(turma => turma.tutorId === tutorId && turma.estado === "ativa");
+    saveEstudantes(estudantes) {
+        localStorage.setItem('ipmc_estudantes', JSON.stringify(estudantes));
     }
 
-    updateTurmaEstado(turmaId, estado) {
-        const database = this.getDatabase();
-        const turma = database.turmas.find(t => t.id == turmaId);
-        if (turma) {
-            turma.estado = estado;
-            this.saveDatabase(database);
-        }
+    addEstudante(estudante) {
+        const estudantes = this.getEstudantes();
+        estudante.id = this.generateId(estudantes);
+        estudante.createdAt = new Date().toISOString();
+        estudantes.push(estudante);
+        this.saveEstudantes(estudantes);
+        return estudante;
     }
 
-    atribuirTutorTurma(turmaId, tutorId, disciplinas) {
-        const database = this.getDatabase();
-        const turma = database.turmas.find(t => t.id == turmaId);
-        
-        if (turma) {
-            turma.tutorId = tutorId;
-            turma.estado = "ativa";
-            
-            // Registrar atribuição
-            database.atribuicoesTutores.push({
-                id: Date.now(),
-                turmaId: turmaId,
-                tutorId: tutorId,
-                disciplinas: disciplinas,
-                dataAtribuicao: new Date().toISOString(),
-                atribuidoPor: JSON.parse(sessionStorage.getItem('currentUser')).email
-            });
-            
-            this.saveDatabase(database);
-        }
+    // Avaliações
+    getAvaliacoes() {
+        return JSON.parse(localStorage.getItem('ipmc_avaliacoes') || '[]');
     }
 
-    // MÉTODOS PARA TUTORES
-    getTutores() {
-        const database = this.getDatabase();
-        return Object.values(database.users).filter(user => user.type === 'tutor');
+    saveAvaliacoes(avaliacoes) {
+        localStorage.setItem('ipmc_avaliacoes', JSON.stringify(avaliacoes));
     }
 
-    getTutor(tutorId) {
-        const database = this.getDatabase();
-        return database.users[tutorId];
+    addAvaliacao(avaliacao) {
+        const avaliacoes = this.getAvaliacoes();
+        avaliacao.id = this.generateId(avaliacoes);
+        avaliacao.createdAt = new Date().toISOString();
+        avaliacoes.push(avaliacao);
+        this.saveAvaliacoes(avaliacoes);
+        return avaliacao;
     }
 
-    // Outros métodos existentes...
-    getUser(username) {
-        const database = this.getDatabase();
-        return database.users[username];
+    // Utilitários
+    generateId(array) {
+        return array.length > 0 ? Math.max(...array.map(item => item.id)) + 1 : 1;
     }
 
-    authenticate(username, password, userType) {
-        const user = this.getUser(username);
-        return user && user.password === password && user.type === userType;
+    getNextCodigoTurma() {
+        const turmas = this.getTurmas();
+        const lastTurma = turmas[turmas.length - 1];
+        return lastTurma ? lastTurma.codigo + 1 : 1001;
     }
 }
 
-// Inicializar base de dados
-const ipmcDB = new IPMCDatabase();
+// Instância global do banco de dados
+const db = new Database();

@@ -1,90 +1,92 @@
-// Sistema de Autenticação
-document.addEventListener('DOMContentLoaded', function() {
-    initLoginSystem();
-});
+class AuthSystem {
+    constructor() {
+        this.currentUser = null;
+        this.init();
+    }
 
-function initLoginSystem() {
-    // Seleção de tipo de usuário
-    document.querySelectorAll('.user-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.user-type-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
+    init() {
+        this.checkLoginStatus();
+        this.setupEventListeners();
+    }
 
-    // Formulário de login
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
+    setupEventListeners() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleLogin();
+            });
+        }
+    }
+
+    handleLogin() {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        const activeBtn = document.querySelector('.user-type-btn.active');
         
-        if (!activeBtn) {
-            alert('Por favor, selecione o tipo de utilizador.');
-            return;
-        }
-
-        const userType = activeBtn.getAttribute('data-type');
+        const user = db.getUserByUsername(username);
         
-        if (username && password && userType) {
-            if (ipmcDB.authenticate(username, password, userType)) {
-                loginSuccess(username, userType);
-            } else {
-                alert('Credenciais inválidas. Por favor, tente novamente.');
-            }
+        if (user && user.password === password) {
+            this.loginSuccess(user);
         } else {
-            alert('Por favor, preencha todos os campos.');
+            this.showMessage('Username ou senha incorretos!', 'error');
         }
-    });
-}
-
-function loginSuccess(username, userType) {
-    const user = ipmcDB.getUser(username);
-    
-    // Salvar sessão
-    sessionStorage.setItem('currentUser', JSON.stringify(user));
-    
-    // Redirecionar para o módulo correspondente
-    switch(userType) {
-        case 'estudante':
-            window.location.href = 'estudante.html';
-            break;
-        case 'tutor':
-            window.location.href = 'tutor.html';
-            break;
-        case 'secretaria':
-            window.location.href = 'secretaria.html';
-            break;
-        case 'pedagogico':
-            window.location.href = 'pedagogico.html';
-            break;
-        case 'financeiro':
-            window.location.href = 'financeiro.html';
-            break;
-        case 'director':
-            window.location.href = 'director.html';
-            break;
-        default:
-            alert('Tipo de utilizador não reconhecido.');
     }
-}
 
-function logout() {
-    sessionStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
-}
+    loginSuccess(user) {
+        this.currentUser = user;
+        localStorage.setItem('ipmc_currentUser', JSON.stringify(user));
+        this.showMessage('Login realizado com sucesso!', 'success');
+        
+        setTimeout(() => {
+            this.redirectToDashboard(user.profile);
+        }, 1000);
+    }
 
-// Verificar se há sessão ativa ao carregar páginas
-function checkAuth() {
-    const currentUser = sessionStorage.getItem('currentUser');
-    if (!currentUser) {
+    redirectToDashboard(profile) {
+        const pages = {
+            'director': 'director.html',
+            'pedagogico': 'pedagogico.html',
+            'secretaria': 'secretaria.html',
+            'tutor': 'tutor.html',
+            'estudante': 'estudante.html'
+        };
+        
+        window.location.href = pages[profile] || 'index.html';
+    }
+
+    checkLoginStatus() {
+        const savedUser = localStorage.getItem('ipmc_currentUser');
+        if (savedUser) {
+            this.currentUser = JSON.parse(savedUser);
+            // Se já está logado e na página de login, redireciona
+            if (window.location.pathname.endsWith('index.html')) {
+                this.redirectToDashboard(this.currentUser.profile);
+            }
+        }
+    }
+
+    showMessage(text, type) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = text;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 3000);
+    }
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('ipmc_currentUser');
         window.location.href = 'index.html';
-        return null;
     }
-    return JSON.parse(currentUser);
 }
 
-function getInitials(name) {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+// Instância global do sistema de autenticação
+const auth = new AuthSystem();
+
+// Função global para logout
+function logout() {
+    auth.logout();
 }

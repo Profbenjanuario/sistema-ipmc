@@ -1016,6 +1016,504 @@
                 }).join('');
             }
 
-            loadTurmasAtribuidas() {
+                        loadTurmasAtribuidas() {
                 const minhasTurmas = this.getMinhasTurmas();
                 const container = document.getElementById('turmasAtribuidasList');
+                
+                if (minhasTurmas.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma turma atribuída</p>';
+                    return;
+                }
+
+                container.innerHTML = minhasTurmas.map(turma => {
+                    const numeroEstudantes = this.getNumeroEstudantesTurma(turma.id);
+                    const percentualOcupacao = (numeroEstudantes / turma.vagas) * 100;
+                    const avaliacoesPendentes = this.getAvaliacoesPendentesTurma(turma.id);
+                    
+                    return `
+                        <div class="turma-card" data-turma-id="${turma.id}">
+                            <div class="turma-header">
+                                <h3>${turma.nome}</h3>
+                                <span class="status-badge ${turma.status === 'ativa' ? 'ativo' : 'cancelado'}">
+                                    ${turma.status === 'ativa' ? 'Ativa' : 'Inativa'}
+                                </span>
+                            </div>
+                            <div class="turma-info">
+                                <p><strong>Curso:</strong> ${this.getCursoNome(turma.cursoId)}</p>
+                                <p><strong>Sala:</strong> ${turma.sala}</p>
+                                <p><strong>Período:</strong> ${turma.periodo}</p>
+                                <p><strong>Horário:</strong> ${turma.horario}</p>
+                                <p><strong>Estudantes:</strong> ${numeroEstudantes}/${turma.vagas}</p>
+                                <p><strong>Avaliações Pendentes:</strong> ${avaliacoesPendentes}</p>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${percentualOcupacao}%"></div>
+                                </div>
+                                <small>Ocupação: ${percentualOcupacao.toFixed(1)}%</small>
+                            </div>
+                            <div class="turma-actions">
+                                <button onclick="tutorSystem.verDetalhesTurma(${turma.id})" class="action-btn primary">👁️ Ver Detalhes</button>
+                                <button onclick="tutorSystem.lancarAvaliacaoTurma(${turma.id})" class="action-btn success">📝 Avaliar</button>
+                                <button onclick="tutorSystem.verEstudantesTurma(${turma.id})" class="action-btn warning">👥 Estudantes</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            filtrarTurmas() {
+                const searchTerm = document.getElementById('searchTurmas').value.toLowerCase();
+                const turmas = document.querySelectorAll('.turma-card');
+                
+                turmas.forEach(turma => {
+                    const turmaText = turma.textContent.toLowerCase();
+                    turma.style.display = turmaText.includes(searchTerm) ? 'block' : 'none';
+                });
+            }
+
+            carregarTurmasParaAvaliacao() {
+                const select = document.getElementById('selectTurmaAvaliacao');
+                const minhasTurmas = this.getMinhasTurmas().filter(t => t.status === 'ativa');
+                
+                select.innerHTML = '<option value="">Selecione uma turma</option>';
+                minhasTurmas.forEach(turma => {
+                    const option = document.createElement('option');
+                    option.value = turma.id;
+                    option.textContent = `${turma.nome} - ${this.getCursoNome(turma.cursoId)}`;
+                    select.appendChild(option);
+                });
+            }
+
+            carregarEstudantesParaAvaliacao() {
+                const turmaId = document.getElementById('selectTurmaAvaliacao').value;
+                const container = document.getElementById('formAvaliacaoContainer');
+                const listaEstudantes = document.getElementById('listaEstudantesAvaliacao');
+                
+                if (!turmaId) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                const estudantes = this.getEstudantesTurma(turmaId);
+                listaEstudantes.innerHTML = estudantes.map(estudante => `
+                    <div class="estudante-nota">
+                        <label for="nota_${estudante.id}">${estudante.nome}</label>
+                        <input type="number" id="nota_${estudante.id}" 
+                               min="0" max="20" step="0.1" 
+                               placeholder="0-20" required>
+                    </div>
+                `).join('');
+
+                container.style.display = 'block';
+            }
+
+            carregarEstudantesParaEstagio() {
+                const select = document.getElementById('estagioEstudante');
+                const estudantes = this.getMeusEstudantes();
+                
+                select.innerHTML = '<option value="">Selecione o estudante</option>';
+                estudantes.forEach(estudante => {
+                    const option = document.createElement('option');
+                    option.value = estudante.id;
+                    option.textContent = `${estudante.nome} - ${estudante.numeroEstudante}`;
+                    select.appendChild(option);
+                });
+            }
+
+            lancarAvaliacao() {
+                const turmaId = document.getElementById('selectTurmaAvaliacao').value;
+                const tipo = document.getElementById('avaliacaoTipo').value;
+                const disciplina = document.getElementById('avaliacaoDisciplina').value;
+                const peso = document.getElementById('avaliacaoPeso').value;
+                const data = document.getElementById('avaliacaoData').value;
+                const descricao = document.getElementById('avaliacaoDescricao').value;
+
+                if (!turmaId || !disciplina || !peso || !data) {
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                    return;
+                }
+
+                const notas = {};
+                const estudantes = this.getEstudantesTurma(turmaId);
+                let todasNotasValidas = true;
+
+                estudantes.forEach(estudante => {
+                    const notaInput = document.getElementById(`nota_${estudante.id}`);
+                    const nota = parseFloat(notaInput.value);
+                    
+                    if (notaInput.value === '' || isNaN(nota) || nota < 0 || nota > 20) {
+                        todasNotasValidas = false;
+                        notaInput.style.borderColor = 'red';
+                    } else {
+                        notas[estudante.id] = nota;
+                        notaInput.style.borderColor = '';
+                    }
+                });
+
+                if (!todasNotasValidas) {
+                    alert('Por favor, insira notas válidas (0-20) para todos os estudantes.');
+                    return;
+                }
+
+                const avaliacao = {
+                    id: Date.now(),
+                    turmaId: parseInt(turmaId),
+                    tutorId: this.currentUser.id,
+                    tipo: tipo,
+                    disciplina: disciplina,
+                    peso: parseInt(peso),
+                    data: data,
+                    descricao: descricao,
+                    notas: notas,
+                    dataLancamento: new Date().toISOString(),
+                    finalizada: true
+                };
+
+                this.salvarAvaliacao(avaliacao);
+                alert('Avaliação lançada com sucesso!');
+                this.limparFormAvaliacao();
+                this.showSection('dashboard');
+            }
+
+            salvarAvaliacao(avaliacao) {
+                const avaliacoes = this.getMinhasAvaliacoes();
+                avaliacoes.push(avaliacao);
+                localStorage.setItem(`ipmc_avaliacoes_tutor_${this.currentUser.id}`, JSON.stringify(avaliacoes));
+            }
+
+            limparFormAvaliacao() {
+                document.getElementById('selectTurmaAvaliacao').value = '';
+                document.getElementById('avaliacaoDisciplina').value = '';
+                document.getElementById('avaliacaoPeso').value = '';
+                document.getElementById('avaliacaoData').value = '';
+                document.getElementById('avaliacaoDescricao').value = '';
+                document.getElementById('formAvaliacaoContainer').style.display = 'none';
+            }
+
+            carregarHistoricoAvaliacoes() {
+                const avaliacoes = this.getMinhasAvaliacoes().reverse();
+                const container = document.getElementById('historicoAvaliacoes');
+                
+                if (avaliacoes.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma avaliação encontrada</p>';
+                    return;
+                }
+
+                container.innerHTML = avaliacoes.map(avaliacao => {
+                    const turma = this.getTurmaById(avaliacao.turmaId);
+                    const media = this.calcularMediaAvaliacao(avaliacao);
+                    const numeroEstudantes = Object.keys(avaliacao.notas).length;
+                    
+                    return `
+                        <div class="avaliacao-item" data-avaliacao-id="${avaliacao.id}">
+                            <div class="avaliacao-info">
+                                <h4>${avaliacao.disciplina} - ${avaliacao.tipo}</h4>
+                                <p><strong>Turma:</strong> ${turma.nome}</p>
+                                <p><strong>Data:</strong> ${this.formatDate(avaliacao.data)}</p>
+                                <p><strong>Peso:</strong> ${avaliacao.peso}% | <strong>Estudantes:</strong> ${numeroEstudantes}</p>
+                                ${avaliacao.descricao ? `<p><strong>Descrição:</strong> ${avaliacao.descricao}</p>` : ''}
+                            </div>
+                            <div class="nota-badge ${this.getClassNota(media)}">
+                                Média: ${media.toFixed(1)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            filtrarAvaliacoes() {
+                const searchTerm = document.getElementById('searchAvaliacoes').value.toLowerCase();
+                const avaliacoes = document.querySelectorAll('.avaliacao-item');
+                
+                avaliacoes.forEach(avaliacao => {
+                    const avaliacaoText = avaliacao.textContent.toLowerCase();
+                    avaliacao.style.display = avaliacaoText.includes(searchTerm) ? 'flex' : 'none';
+                });
+            }
+
+            registrarEstagio() {
+                const formData = new FormData(document.getElementById('formEstagio'));
+                const dados = Object.fromEntries(formData);
+                
+                if (!dados.estudanteId || !dados.empresa || !dados.supervisor || !dados.dataInicio || !dados.dataFim || !dados.area) {
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                    return;
+                }
+
+                const estagio = {
+                    id: Date.now(),
+                    estudanteId: parseInt(dados.estudanteId),
+                    tutorId: this.currentUser.id,
+                    empresa: dados.empresa,
+                    supervisor: dados.supervisor,
+                    contactoSupervisor: dados.contactoSupervisor,
+                    dataInicio: dados.dataInicio,
+                    dataFim: dados.dataFim,
+                    area: dados.area,
+                    avaliacao: dados.avaliacao ? parseFloat(dados.avaliacao) : null,
+                    observacoes: dados.observacoes,
+                    status: new Date(dados.dataFim) > new Date() ? 'ativo' : 'concluido',
+                    dataRegistro: new Date().toISOString()
+                };
+
+                this.salvarEstagio(estagio);
+                alert('Estágio registrado com sucesso!');
+                document.getElementById('formEstagio').reset();
+                this.carregarEstagios();
+            }
+
+            salvarEstagio(estagio) {
+                const estagios = this.getMeusEstagios();
+                estagios.push(estagio);
+                localStorage.setItem(`ipmc_estagios_tutor_${this.currentUser.id}`, JSON.stringify(estagios));
+            }
+
+            carregarEstagios() {
+                const estagios = this.getMeusEstagios().reverse();
+                const container = document.getElementById('listaEstagios');
+                
+                if (estagios.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhum estágio registrado</p>';
+                    return;
+                }
+
+                container.innerHTML = estagios.map(estagio => {
+                    const estudante = this.getEstudanteById(estagio.estudanteId);
+                    const statusClass = estagio.status === 'ativo' ? 'ativo' : 
+                                      estagio.status === 'concluido' ? 'concluido' : 'cancelado';
+                    
+                    return `
+                        <div class="estagio-card" data-estagio-id="${estagio.id}">
+                            <div class="estagio-header">
+                                <h3>${estante.nome}</h3>
+                                <span class="status-badge ${statusClass}">
+                                    ${estagio.status === 'ativo' ? 'Em Andamento' : 
+                                      estagio.status === 'concluido' ? 'Concluído' : 'Cancelado'}
+                                </span>
+                            </div>
+                            <div class="estagio-info">
+                                <p><strong>Empresa:</strong> ${estagio.empresa}</p>
+                                <p><strong>Área:</strong> ${estagio.area}</p>
+                                <p><strong>Supervisor:</strong> ${estagio.supervisor}</p>
+                                <p><strong>Período:</strong> ${this.formatDate(estagio.dataInicio)} a ${this.formatDate(estagio.dataFim)}</p>
+                                ${estagio.avaliacao ? `<p><strong>Avaliação:</strong> ${estagio.avaliacao}/20</p>` : ''}
+                                ${estagio.observacoes ? `<p><strong>Observações:</strong> ${estagio.observacoes}</p>` : ''}
+                            </div>
+                            <div class="turma-actions">
+                                <button onclick="tutorSystem.verDetalhesEstagio(${estagio.id})" class="action-btn primary">👁️ Detalhes</button>
+                                <button onclick="tutorSystem.editarEstagio(${estagio.id})" class="action-btn warning">✏️ Editar</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            filtrarEstagios() {
+                const searchTerm = document.getElementById('searchEstagios').value.toLowerCase();
+                const estagios = document.querySelectorAll('.estagio-card');
+                
+                estagios.forEach(estagio => {
+                    const estagioText = estagio.textContent.toLowerCase();
+                    estagio.style.display = estagioText.includes(searchTerm) ? 'block' : 'none';
+                });
+            }
+
+            carregarMeuPerfil() {
+                if (!this.currentUser) return;
+
+                document.getElementById('perfilNome').value = this.currentUser.personalInfo?.nome || '';
+                document.getElementById('perfilEspecialidade').value = this.currentUser.personalInfo?.especialidade || '';
+                document.getElementById('perfilEmail').value = this.currentUser.email || '';
+                document.getElementById('perfilContacto').value = this.currentUser.personalInfo?.contacto || '';
+                document.getElementById('perfilFormacao').value = this.currentUser.personalInfo?.formacao || '';
+                document.getElementById('perfilDataRegisto').value = this.formatDate(this.currentUser.dataRegisto);
+
+                // Estatísticas do perfil
+                const minhasTurmas = this.getMinhasTurmas();
+                const estudantes = this.getMeusEstudantes();
+                const avaliacoes = this.getMinhasAvaliacoes();
+                const estagios = this.getMeusEstagios();
+
+                document.getElementById('statTurmasAtivas').textContent = minhasTurmas.length;
+                document.getElementById('statTotalEstudantes').textContent = estudantes.length;
+                document.getElementById('statAvaliacoes').textContent = avaliacoes.length;
+                document.getElementById('statEstagios').textContent = estagios.length;
+            }
+
+            // Métodos auxiliares para obter dados
+            getMinhasTurmas() {
+                const todasTurmas = JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+                return todasTurmas.filter(turma => 
+                    turma.tutores && turma.tutores.includes(this.currentUser.id)
+                );
+            }
+
+            getMeusEstudantes() {
+                const minhasTurmas = this.getMinhasTurmas();
+                const todosEstudantes = JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+                
+                return todosEstudantes.filter(estudante =>
+                    minhasTurmas.some(turma => turma.estudantes.includes(estudante.id))
+                );
+            }
+
+            getEstudantesTurma(turmaId) {
+                const turma = this.getTurmaById(turmaId);
+                const todosEstudantes = JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+                
+                return todosEstudantes.filter(estudante =>
+                    turma.estudantes.includes(estudante.id)
+                );
+            }
+
+            getNumeroEstudantesTurma(turmaId) {
+                const turma = this.getTurmaById(turmaId);
+                return turma.estudantes ? turma.estudantes.length : 0;
+            }
+
+            getTurmaById(turmaId) {
+                const todasTurmas = JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+                return todasTurmas.find(t => t.id == turmaId) || {};
+            }
+
+            getEstudanteById(estudanteId) {
+                const todosEstudantes = JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+                return todosEstudantes.find(e => e.id == estudanteId) || {};
+            }
+
+            getCursoNome(cursoId) {
+                const todosCursos = JSON.parse(localStorage.getItem('ipmc_cursos') || '[]');
+                const curso = todosCursos.find(c => c.id == cursoId);
+                return curso ? curso.nome : 'Curso não encontrado';
+            }
+
+            getMinhasAvaliacoes() {
+                return JSON.parse(localStorage.getItem(`ipmc_avaliacoes_tutor_${this.currentUser.id}`) || '[]');
+            }
+
+            getMeusEstagios() {
+                return JSON.parse(localStorage.getItem(`ipmc_estagios_tutor_${this.currentUser.id}`) || '[]');
+            }
+
+            getAvaliacoesPendentesTurma(turmaId) {
+                // Implementar lógica para contar avaliações pendentes
+                return 0;
+            }
+
+            calcularMediaAvaliacao(avaliacao) {
+                const notas = Object.values(avaliacao.notas);
+                if (notas.length === 0) return 0;
+                return notas.reduce((sum, nota) => sum + nota, 0) / notas.length;
+            }
+
+            getClassNota(nota) {
+                if (nota >= 16) return 'nota-alta';
+                if (nota >= 10) return 'nota-media';
+                return 'nota-baixa';
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-PT');
+            }
+
+            // Métodos de ação
+            verDetalhesTurma(turmaId) {
+                const turma = this.getTurmaById(turmaId);
+                const estudantes = this.getEstudantesTurma(turmaId);
+                const curso = this.getCursoNome(turma.cursoId);
+                
+                document.getElementById('detalhesTurma').innerHTML = `
+                    <h4>${turma.nome}</h4>
+                    <p><strong>Curso:</strong> ${curso}</p>
+                    <p><strong>Sala:</strong> ${turma.sala}</p>
+                    <p><strong>Período:</strong> ${turma.periodo}</p>
+                    <p><strong>Horário:</strong> ${turma.horario}</p>
+                    <p><strong>Vagas:</strong> ${estudantes.length}/${turma.vagas}</p>
+                    <p><strong>Status:</strong> ${turma.status}</p>
+                    
+                    <h5 style="margin-top: 1rem;">Estudantes da Turma (${estudantes.length})</h5>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        ${estudantes.map(est => `
+                            <div style="padding: 0.5rem; border-bottom: 1px solid #eee;">
+                                <strong>${est.nome}</strong> - ${est.numeroEstudante}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                document.getElementById('modalTurma').style.display = 'block';
+            }
+
+            verDetalhesEstagio(estagioId) {
+                const estagios = this.getMeusEstagios();
+                const estagio = estagios.find(e => e.id == estagioId);
+                const estudante = this.getEstudanteById(estagio.estudanteId);
+                
+                if (!estagio) return;
+
+                document.getElementById('detalhesEstagio').innerHTML = `
+                    <h4>Estágio de ${estudante.nome}</h4>
+                    <p><strong>Empresa:</strong> ${estagio.empresa}</p>
+                    <p><strong>Área:</strong> ${estagio.area}</p>
+                    <p><strong>Supervisor:</strong> ${estagio.supervisor}</p>
+                    <p><strong>Contacto do Supervisor:</strong> ${estagio.contactoSupervisor || 'Não informado'}</p>
+                    <p><strong>Período:</strong> ${this.formatDate(estagio.dataInicio)} a ${this.formatDate(estagio.dataFim)}</p>
+                    <p><strong>Avaliação Final:</strong> ${estagio.avaliacao ? estagio.avaliacao + '/20' : 'Não avaliado'}</p>
+                    <p><strong>Status:</strong> ${estagio.status === 'ativo' ? 'Em Andamento' : 'Concluído'}</p>
+                    ${estagio.observacoes ? `<p><strong>Observações:</strong> ${estagio.observacoes}</p>` : ''}
+                    <p><strong>Data de Registro:</strong> ${this.formatDate(estagio.dataRegistro)}</p>
+                `;
+                
+                document.getElementById('modalEstagio').style.display = 'block';
+            }
+
+            lancarAvaliacaoTurma(turmaId) {
+                this.showSection('avaliacoes');
+                document.getElementById('selectTurmaAvaliacao').value = turmaId;
+                this.carregarEstudantesParaAvaliacao();
+            }
+
+            verAvaliacoesRecentes() {
+                this.showSection('avaliacoes');
+            }
+
+            verEstudantesTurma(turmaId) {
+                // Implementar visualização de estudantes da turma
+                alert(`Funcionalidade para ver estudantes da turma ${turmaId} será implementada`);
+            }
+
+            editarEstagio(estagioId) {
+                // Implementar edição de estágio
+                alert(`Funcionalidade para editar estágio ${estagioId} será implementada`);
+            }
+        }
+
+        // Função de logout
+        function logout() {
+            localStorage.removeItem('ipmc_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar o sistema quando a página carregar
+        let tutorSystem;
+        document.addEventListener('DOMContentLoaded', function() {
+            tutorSystem = new TutorSystem();
+        });
+
+        // Fechar modais quando clicar fora
+        window.onclick = function(event) {
+            const modalTurma = document.getElementById('modalTurma');
+            const modalEstagio = document.getElementById('modalEstagio');
+            
+            if (event.target === modalTurma) {
+                modalTurma.style.display = 'none';
+            }
+            if (event.target === modalEstagio) {
+                modalEstagio.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

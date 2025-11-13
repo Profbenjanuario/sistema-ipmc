@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Financeiro - Sistema IPMC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-receita {
+            color: #28a745;
+        }
+
+        .stat-despesa {
+            color: #dc3545;
+        }
+
+        .stat-saldo {
+            color: #667eea;
+        }
+
+        .stat-pendente {
+            color: #ffc107;
+        }
+
+        /* Tables */
+        .finance-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .finance-table th,
+        .finance-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .finance-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .finance-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pago {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-atrasado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-recebido {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Forms */
+        .user-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin: 0.25rem;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        /* Value Colors */
+        .valor-positivo {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .valor-negativo {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        /* Student View Specific */
+        .student-info-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .payment-summary {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .quick-action-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Sistema IPMC - Financeiro</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userWelcome">Bem-vindo, Utilizador</span>
+                </div>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <nav class="sidebar" id="sidebarNav">
+                <!-- Menu será carregado dinamicamente baseado no perfil -->
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <h2>Dashboard Financeiro</h2>
+                    
+                    <!-- Ações Rápidas para Estudantes -->
+                    <div id="quickActionsStudent" class="quick-actions" style="display: none;">
+                        <div class="quick-action-card" onclick="financeiroSystem.showSection('minhas-mensalidades')">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <h3>Minhas Mensalidades</h3>
+                        </div>
+                        <div class="quick-action-card" onclick="financeiroSystem.showSection('meus-pagamentos')">
+                            <i class="fas fa-receipt"></i>
+                            <h3>Meus Pagamentos</h3>
+                        </div>
+                        <div class="quick-action-card" onclick="financeiroSystem.gerarComprovativo()">
+                            <i class="fas fa-print"></i>
+                            <h3>Comprovativos</h3>
+                        </div>
+                        <div class="quick-action-card" onclick="financeiroSystem.contactarFinanceiro()">
+                            <i class="fas fa-headset"></i>
+                            <h3>Apoio Financeiro</h3>
+                        </div>
+                    </div>
+
+                    <!-- Ações Rápidas para Direção/Financeiro -->
+                    <div id="quickActionsAdmin" class="quick-actions" style="display: none;">
+                        <div class="quick-action-card" onclick="financeiroSystem.showSection('mensalidades')">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <h3>Mensalidades</h3>
+                        </div>
+                        <div class="quick-action-card" onclick="financeiroSystem.showSection('pagamentos')">
+                            <i class="fas fa-money-check"></i>
+                            <h3>Pagamentos</h3>
+                        </div>
+                        <div class="quick-action-card" onclick="financeiroSystem.showSection('despesas')">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Despesas</h3>
+                        </div>
+                        <div class="quick-action-card" onclick="financeiroSystem.showSection('relatorios')">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>Relatórios</h3>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard do Estudante -->
+                    <div id="dashboardStudent" style="display: none;">
+                        <div class="student-info-card">
+                            <h3>Minha Situação Financeira</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Próxima Mensalidade</span>
+                                    <span class="info-value" id="proximaMensalidade">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Valor em Dívida</span>
+                                    <span class="info-value valor-negativo" id="valorDivida">0 KZ</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Último Pagamento</span>
+                                    <span class="info-value" id="ultimoPagamento">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Status Financeiro</span>
+                                    <span class="info-value" id="statusFinanceiro">Regular</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-summary">
+                            <h3>Próximos Vencimentos</h3>
+                            <div id="proximosVencimentos">
+                                <!-- Vencimentos serão carregados aqui -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard da Direção/Financeiro -->
+                    <div id="dashboardAdmin" style="display: none;">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Receita do Mês</h3>
+                                <span id="receitaMes" class="stat-number stat-receita">0 KZ</span>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Despesas do Mês</h3>
+                                <span id="despesasMes" class="stat-number stat-despesa">0 KZ</span>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Saldo Atual</h3>
+                                <span id="saldoAtual" class="stat-number stat-saldo">0 KZ</span>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Pagamentos Pendentes</h3>
+                                <span id="pagamentosPendentes" class="stat-number stat-pendente">0</span>
+                            </div>
+                        </div>
+
+                        <div class="charts-container">
+                            <div class="chart-card">
+                                <h3>Receitas vs Despesas</h3>
+                                <div class="chart-placeholder">
+                                    Gráfico de Receitas vs Despesas
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Pagamentos por Status</h3>
+                                <div class="chart-placeholder">
+                                    Gráfico de Status de Pagamentos
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="finance-table">
+                            <h3 style="padding: 1rem; margin: 0;">Últimas Transações</h3>
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Estudante/Fornecedor</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Tipo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ultimasTransacoes">
+                                    <!-- Transações serão carregadas via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Seções do Estudante -->
+                <section id="minhas-mensalidades" class="content-section">
+                    <h2>Minhas Mensalidades</h2>
+                    <div class="finance-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Mês/Ano</th>
+                                    <th>Valor</th>
+                                    <th>Vencimento</th>
+                                    <th>Status</th>
+                                    <th>Valor com Multa</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="minhasMensalidadesTable">
+                                <!-- Mensalidades do estudante serão carregadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="meus-pagamentos" class="content-section">
+                    <h2>Meus Pagamentos</h2>
+                    <div class="finance-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Método</th>
+                                    <th>Comprovativo</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="meusPagamentosTable">
+                                <!-- Pagamentos do estudante serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Seções da Direção/Financeiro -->
+                <section id="mensalidades" class="content-section">
+                    <h2>Gestão de Mensalidades</h2>
+                    
+                    <div class="filter-section">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label for="filtroTurma">Filtrar por Turma</label>
+                                <select id="filtroTurma">
+                                    <option value="">Todas as Turmas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filtroMes">Filtrar por Mês</label>
+                                <select id="filtroMes">
+                                    <option value="">Todos os Meses</option>
+                                    <option value="1">Janeiro</option>
+                                    <option value="2">Fevereiro</option>
+                                    <option value="3">Março</option>
+                                    <option value="4">Abril</option>
+                                    <option value="5">Maio</option>
+                                    <option value="6">Junho</option>
+                                    <option value="7">Julho</option>
+                                    <option value="8">Agosto</option>
+                                    <option value="9">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12">Dezembro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filtroStatus">Filtrar por Status</label>
+                                <select id="filtroStatus">
+                                    <option value="">Todos</option>
+                                    <option value="pago">Pago</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="atrasado">Atrasado</option>
+                                </select>
+                            </div>
+                            <button onclick="financeiroSystem.filtrarMensalidades()" class="action-btn primary">Aplicar Filtros</button>
+                        </div>
+                    </div>
+
+                    <div class="finance-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Estudante</th>
+                                    <th>Turma</th>
+                                    <th>Mês/Ano</th>
+                                    <th>Valor</th>
+                                    <th>Vencimento</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaMensalidades">
+                                <!-- Mensalidades serão carregadas via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="pagamentos" class="content-section">
+                    <h2>Registro de Pagamentos</h2>
+                    
+                    <div class="user-form">
+                        <h3>Registrar Novo Pagamento</h3>
+                        <form id="formPagamento">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="pagamentoEstudante">Estudante</label>
+                                    <select id="pagamentoEstudante" name="estudanteId" required>
+                                        <option value="">Selecione o estudante</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoTipo">Tipo de Pagamento</label>
+                                    <select id="pagamentoTipo" name="tipo" required>
+                                        <option value="mensalidade">Mensalidade</option>
+                                        <option value="matricula">Matrícula</option>
+                                        <option value="material">Material</option>
+                                        <option value="outro">Outro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoValor">Valor (KZ)</label>
+                                    <input type="number" id="pagamentoValor" name="valor" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoData">Data do Pagamento</label>
+                                    <input type="date" id="pagamentoData" name="data" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoMesRef">Mês de Referência</label>
+                                    <select id="pagamentoMesRef" name="mesReferencia">
+                                        <option value="">Selecione o mês</option>
+                                        <option value="1">Janeiro</option>
+                                        <option value="2">Fevereiro</option>
+                                        <option value="3">Março</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Maio</option>
+                                        <option value="6">Junho</option>
+                                        <option value="7">Julho</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pagamentoMetodo">Método de Pagamento</label>
+                                    <select id="pagamentoMetodo" name="metodo" required>
+                                        <option value="dinheiro">Dinheiro</option>
+                                        <option value="transferencia">Transferência</option>
+                                        <option value="multicaixa">Multicaixa</option>
+                                        <option value="cheque">Cheque</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pagamentoObservacao">Observações</label>
+                                <textarea id="pagamentoObservacao" name="observacao" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Registrar Pagamento</button>
+                        </form>
+                    </div>
+
+                    <div class="finance-table" style="margin-top: 2rem;">
+                        <h3 style="padding: 1rem; margin: 0;">Histórico de Pagamentos</h3>
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Estudante</th>
+                                    <th>Tipo</th>
+                                    <th>Valor</th>
+                                    <th>Método</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historicoPagamentos">
+                                <!-- Histórico será carregado via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Outras seções (Despesas, Relatórios, Configurações) mantêm-se iguais -->
+                <section id="despesas" class="content-section">
+                    <!-- ... conteúdo igual ao anterior ... -->
+                </section>
+
+                <section id="relatorios" class="content-section">
+                    <!-- ... conteúdo igual ao anterior ... -->
+                </section>
+
+                <section id="configuracoes" class="content-section">
+                    <!-- ... conteúdo igual ao anterior ... -->
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        class FinanceiroSystem {
+            constructor() {
+                this.currentUser = null;
+                this.userProfile = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadUserInterface();
+                this.loadDashboardData();
+            }
+
+            checkAuth() {
+                const savedUser = localStorage.getItem('ipmc_currentUser');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.currentUser = JSON.parse(savedUser);
+                this.userProfile = this.currentUser.profile;
+
+                // Atualizar interface do usuário
+                document.getElementById('userWelcome').textContent = 
+                    `Bem-vindo, ${this.currentUser.personalInfo?.nome || this.userProfile}`;
+                
+                const userAvatar = document.getElementById('userAvatar');
+                const name = this.currentUser.personalInfo?.nome || this.userProfile;
+                userAvatar.textContent = name.charAt(0).toUpperCase();
+            }
+
+            setupEventListeners() {
+                // Formulários
+                const formPagamento = document.getElementById('formPagamento');
+                if (formPagamento) {
+                    formPagamento.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.registrarPagamento();
+                    });
+                }
+
+                // Outros event listeners...
+            }
+
+            loadUserInterface() {
+                this.loadSidebarMenu();
+                this.showDashboardByProfile();
+            }
+
+            loadSidebarMenu() {
+                const sidebar = document.getElementById('sidebarNav');
+                let menuItems = '';
+
+                if (this.userProfile === 'estudante') {
+                    menuItems = `
+                        <ul>
+                            <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+                            <li><a href="#minhas-mensalidades" class="nav-link" data-section="minhas-mensalidades">💰 Mensalidades</a></li>
+                            <li><a href="#meus-pagamentos" class="nav-link" data-section="meus-pagamentos">🧾 Meus Pagamentos</a></li>
+                        </ul>
+                    `;
+                } else {
+                    // Menu para direção/financeiro
+                    menuItems = `
+                        <ul>
+                            <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+                            <li><a href="#mensalidades" class="nav-link" data-section="mensalidades">💰 Mensalidades</a></li>
+                            <li><a href="#pagamentos" class="nav-link" data-section="pagamentos">💳 Pagamentos</a></li>
+                            <li><a href="#despesas" class="nav-link" data-section="despesas">📉 Despesas</a></li>
+                            <li><a href="#relatorios" class="nav-link" data-section="relatorios">📈 Relatórios</a></li>
+                            <li><a href="#configuracoes" class="nav-link" data-section="configuracoes">⚙️ Configurações</a></li>
+                        </ul>
+                    `;
+                }
+
+                sidebar.innerHTML = menuItems;
+
+                // Adicionar event listeners aos links do menu
+                sidebar.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showSection(link.dataset.section);
+                    });
+                });
+            }
+
+            showDashboardByProfile() {
+                if (this.userProfile === 'estudante') {
+                    document.getElementById('quickActionsStudent').style.display = 'grid';
+                    document.getElementById('dashboardStudent').style.display = 'block';
+                    document.getElementById('quickActionsAdmin').style.display = 'none';
+                    document.getElementById('dashboardAdmin').style.display = 'none';
+                    this.loadStudentDashboard();
+                } else {
+                    document.getElementById('quickActionsStudent').style.display = 'none';
+                    document.getElementById('dashboardStudent').style.display = 'none';
+                    document.getElementById('quickActionsAdmin').style.display = 'grid';
+                    document.getElementById('dashboardAdmin').style.display = 'block';
+                    this.loadAdminDashboard();
+                }
+            }
+
+            loadStudentDashboard() {
+                const studentData = this.getStudentFinancialData();
+                
+                document.getElementById('proximaMensalidade').textContent = studentData.proximaMensalidade;
+                document.getElementById('valorDivida').textContent = this.formatarMoeda(studentData.valorDivida);
+                document.getElementById('ultimoPagamento').textContent = studentData.ultimoPagamento;
+                document.getElementById('statusFinanceiro').textContent = studentData.status;
+                document.getElementById('statusFinanceiro').className = 
+                    studentData.status === 'Regular' ? 'valor-positivo' : 'valor-negativo';
+
+                this.loadProximosVencimentos();
+            }
+
+            loadAdminDashboard() {
+                // Carregar dados do dashboard administrativo
+                const pagamentos = this.getPagamentosMesAtual();
+                const despesas = this.getDespesasMesAtual();
+                const mensalidades = this.getMensalidadesPendentes();
+
+                const receita = pagamentos.reduce((total, p) => total + p.valor, 0);
+                const despesa = despesas.reduce((total, d) => total + d.valor, 0);
+
+                document.getElementById('receitaMes').textContent = this.formatarMoeda(receita);
+                document.getElementById('despesasMes').textContent = this.formatarMoeda(despesa);
+                document.getElementById('saldoAtual').textContent = this.formatarMoeda(receita - despesa);
+                document.getElementById('pagamentosPendentes').textContent = mensalidades.length;
+
+                this.loadUltimasTransacoes();
+            }
+
+            getStudentFinancialData() {
+                // Obter dados financeiros do estudante atual
+                const estudanteId = this.currentUser.estudanteId || this.currentUser.id;
+                const mensalidades = this.getMensalidadesEstudante(estudanteId);
+                const pagamentos = this.getPagamentosEstudante(estudanteId);
+                
+                const mensalidadesPendentes = mensalidades.filter(m => m.status !== 'pago');
+                const proximaMensalidade = mensalidadesPendentes[0];
+                const valorDivida = mensalidadesPendentes.reduce((total, m) => total + m.valor, 0);
+                const ultimoPagamento = pagamentos.length > 0 ? 
+                    this.formatarData(pagamentos[pagamentos.length - 1].data) : 'Nenhum';
+                
+                const status = valorDivida > 0 ? 'Em Dívida' : 'Regular';
+
+                return {
+                    proximaMensalidade: proximaMensalidade ? 
+                        `${this.getNomeMes(proximaMensalidade.mes)}/${proximaMensalidade.ano}` : 'Nenhuma',
+                    valorDivida: valorDivida,
+                    ultimoPagamento: ultimoPagamento,
+                    status: status
+                };
+            }
+
+            loadProximosVencimentos() {
+                const estudanteId = this.currentUser.estudanteId || this.currentUser.id;
+                const mensalidades = this.getMensalidadesEstudante(estudanteidade);
+                const container = document.getElementById('proximosVencimentos');
+                
+                const proximas = mensalidades
+                    .filter(m => m.status !== 'pago')
+                    .slice(0, 5);
+
+                if (proximas.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhum vencimento próximo</p>';
+                    return;
+                }
+
+                container.innerHTML = proximas.map(mensalidade => `
+                    <div class="payment-item">
+                        <div>
+                            <strong>${this.getNomeMes(mensalidade.mes)}/${mensalidade.ano}</strong>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                Vence em ${this.formatarData(mensalidade.vencimento)}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="valor-${mensalidade.status === 'atrasado' ? 'negativo' : 'positivo'}">
+                                ${this.formatarMoeda(mensalidade.valor)}
+                            </span>
+                            <span class="status-badge status-${mensalidade.status}">
+                                ${this.getStatusText(mensalidade.status)}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                // Carregar dados específicos da seção
+                if (sectionId === 'minhas-mensalidades') {
+                    this.loadMinhasMensalidades();
+                } else if (sectionId === 'meus-pagamentos') {
+                    this.loadMeusPagamentos();
+                } else if (sectionId === 'mensalidades') {
+                    this.loadMensalidadesAdmin();
+                } else if (sectionId === 'pagamentos') {
+                    this.loadPagamentosAdmin();
+                }
+            }
+
+            // ... outros métodos mantêm-se similares aos anteriores ...
+
+            // Novos métodos específicos para estudantes
+            loadMinhasMensalidades() {
+                const estudanteId = this.currentUser.estudanteId || this.currentUser.id;
+                const mensalidades = this.getMensalidadesEstudante(estudanteId);
+                const container = document.getElementById('minhasMensalidadesTable');
+                
+                if (mensalidades.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="no-data">Nenhuma mensalidade encontrada</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = mensalidades.map(mensalidade => {
+                    const valorComMulta = mensalidade.status === 'atrasado' ? 
+                        mensalidade.valor * 1.05 : mensalidade.valor; // 5% de multa
+                    
+                    return `
+                        <tr>
+                            <td>${this.getNomeMes(mensalidade.mes)}/${mensalidade.ano}</td>
+                            <td>${this.formatarMoeda(mensalidade.valor)}</td>
+                            <td>${this.formatarData(mensalidade.vencimento)}</td>
+                            <td><span class="status-badge status-${mensalidade.status}">${this.getStatusText(mensalidade.status)}</span></td>
+                            <td class="${mensalidade.status === 'atrasado' ? 'valor-negativo' : ''}">
+                                ${this.formatarMoeda(valorComMulta)}
+                            </td>
+                            <td>
+                                ${mensalidade.status !== 'pago' ? `
+                                    <button onclick="financeiroSystem.simularPagamento(${mensalidade.id})" class="action-btn success">
+                                        Pagar
+                                    </button>
+                                ` : ''}
+                                <button onclick="financeiroSystem.verDetalhesMensalidade(${mensalidade.id})" class="action-btn primary">
+                                    Detalhes
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            loadMeusPagamentos() {
+                const estudanteId = this.currentUser.estudanteId || this.currentUser.id;
+                const pagamentos = this.getPagamentosEstudante(estudanteId);
+                const container = document.getElementById('meusPagamentosTable');
+                
+                if (pagamentos.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="no-data">Nenhum pagamento encontrado</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = pagamentos.map(pagamento => `
+                    <tr>
+                        <td>${this.formatarData(pagamento.data)}</td>
+                        <td>${pagamento.tipo} - ${pagamento.observacao || ''}</td>
+                        <td class="valor-positivo">${this.formatarMoeda(pagamento.valor)}</td>
+                        <td>${pagamento.metodo}</td>
+                        <td>
+                            <button onclick="financeiroSystem.gerarComprovativoPagamento(${pagamento.id})" class="action-btn primary">
+                                <i class="fas fa-print"></i> Comprovativo
+                            </button>
+                        </td>
+                        <td><span class="status-badge status-${pagamento.status}">${this.getStatusText(pagamento.status)}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            // Métodos auxiliares para estudantes
+            getMensalidadesEstudante(estudanteId) {
+                const todasMensalidades = this.gerarMensalidades();
+                return todasMensalidades.filter(m => m.estudanteId === estudanteId);
+            }
+
+            getPagamentosEstudante(estudanteId) {
+                const todosPagamentos = this.getPagamentos();
+                return todosPagamentos.filter(p => p.estudanteId === estudanteId);
+            }
+
+            // Métodos de ação para estudantes
+            simularPagamento(mensalidadeId) {
+                if (confirm('Deseja simular o pagamento desta mensalidade?')) {
+                    alert('Pagamento simulado com sucesso! Em produção, isto redirecionaria para o gateway de pagamento.');
+                    // Aqui integraria com um gateway de pagamento real
+                }
+            }
+
+            gerarComprovativo() {
+                alert('Gerando comprovativo de pagamentos...');
+            }
+
+            gerarComprovativoPagamento(pagamentoId) {
+                alert(`Gerando comprovativo do pagamento ${pagamentoId}...`);
+            }
+
+            contactarFinanceiro() {
+                alert('Redirecionando para o apoio financeiro...');
+            }
+
+            verDetalhesMensalidade(mensalidadeId) {
+                alert(`Mostrando detalhes da mensalidade ${mensalidadeId}`);
+            }
+
+            // ... manter outros métodos existentes do financeiroSystem ...
+        }
+
+        // Função global para logout
+        function logout() {
+            localStorage.removeItem('ipmc_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar sistema financeiro
+        const financeiroSystem = new FinanceiroSystem();
+    </script>
+</body>
+</html>

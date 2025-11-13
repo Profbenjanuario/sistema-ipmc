@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Estudante - Sistema IPMC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-id {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f8f9fa;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: #f8f9fa;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .info-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-success {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Forms */
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input:read-only {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin: 0.25rem;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .action-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Profile Section */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .profile-info h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Academic Info */
+        .academic-info {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Grades */
+        .grade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .grade-item:last-child {
+            border-bottom: none;
+        }
+
+        .grade-info h4 {
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+
+        .grade-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .grade-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .grade-high {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .grade-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .grade-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Schedule */
+        .schedule-day {
+            margin-bottom: 2rem;
+        }
+
+        .schedule-day h4 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .schedule-time {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 100px;
+        }
+
+        .schedule-details {
+            flex: 1;
+            margin: 0 1rem;
+        }
+
+        .schedule-details h5 {
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+
+        .schedule-details p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .schedule-location {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .quick-action-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .quick-action-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .quick-action-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .schedule-details {
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1><i class="fas fa-graduation-cap"></i> Sistema IPMC - Estudante</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">E</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Estudante</span>
+                        <span class="user-id" id="userNumber">Nº: --</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>Dashboard
+                    </a></li>
+                    <li><a href="#meu-perfil" class="nav-link" data-section="meu-perfil">
+                        <i class="fas fa-user"></i>Meu Perfil
+                    </a></li>
+                    <li><a href="#informacao-academica" class="nav-link" data-section="informacao-academica">
+                        <i class="fas fa-graduation-cap"></i>Informação Académica
+                    </a></li>
+                    <li><a href="#horario" class="nav-link" data-section="horario">
+                        <i class="fas fa-calendar-alt"></i>Horário
+                    </a></li>
+                    <li><a href="#avaliacoes" class="nav-link" data-section="avaliacoes">
+                        <i class="fas fa-chart-bar"></i>Avaliações
+                    </a></li>
+                    <li><a href="#disciplinas" class="nav-link" data-section="disciplinas">
+                        <i class="fas fa-book"></i>Disciplinas
+                    </a></li>
+                    <li><a href="#financeiro" class="nav-link" data-section="financeiro">
+                        <i class="fas fa-money-bill-wave"></i>Financeiro
+                    </a></li>
+                    <li><a href="#documentos" class="nav-link" data-section="documentos">
+                        <i class="fas fa-file-alt"></i>Documentos
+                    </a></li>
+                    <li><a href="#configuracoes" class="nav-link" data-section="configuracoes">
+                        <i class="fas fa-cog"></i>Configurações
+                    </a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <h2>Dashboard do Estudante</h2>
+                    
+                    <div class="quick-actions">
+                        <div class="quick-action-card" onclick="studentSystem.showSection('horario')">
+                            <i class="fas fa-calendar-day"></i>
+                            <h3>Horário de Hoje</h3>
+                            <p>Ver aulas do dia</p>
+                        </div>
+                        <div class="quick-action-card" onclick="studentSystem.showSection('avaliacoes')">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Últimas Avaliações</h3>
+                            <p>Consultar notas</p>
+                        </div>
+                        <div class="quick-action-card" onclick="studentSystem.showSection('financeiro')">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <h3>Situação Financeira</h3>
+                            <p>Mensalidades e pagamentos</p>
+                        </div>
+                        <div class="quick-action-card" onclick="studentSystem.emitirDocumento('declaracao')">
+                            <i class="fas fa-file-pdf"></i>
+                            <h3>Emitir Declaração</h3>
+                            <p>Documentos académicos</p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Média Actual</h3>
+                            <span id="mediaAtual" class="stat-number">--</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Disciplinas Inscritas</h3>
+                            <span id="totalDisciplinas" class="stat-number">--</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Faltas Este Mês</h3>
+                            <span id="faltasMes" class="stat-number">--</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Próximo Vencimento</h3>
+                            <span id="proximoVencimento" class="stat-number">--</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Próximas Actividades</h3>
+                        <div id="proximasAtividades">
+                            <!-- Atividades serão carregadas aqui -->
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Avisos e Comunicados</h3>
+                        <div id="avisosComunicados">
+                            <!-- Avisos serão carregados aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Meu Perfil Section -->
+                <section id="meu-perfil" class="content-section">
+                    <div class="profile-header">
+                        <div class="profile-avatar" id="profileAvatar">E</div>
+                        <div class="profile-info">
+                            <h2 id="profileName">Nome do Estudante</h2>
+                            <div class="profile-meta">
+                                <p id="profileNumber">Número: --</p>
+                                <p id="profileCourse">Curso: --</p>
+                                <p id="profileStatus">Status: --</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-container">
+                        <h3>Dados Pessoais</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nome Completo</label>
+                                <input type="text" id="perfilNome" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Data de Nascimento</label>
+                                <input type="text" id="perfilNascimento" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Gênero</label>
+                                <input type="text" id="perfilGenero" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado Civil</label>
+                                <input type="text" id="perfilEstadoCivil" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Nacionalidade</label>
+                                <input type="text" id="perfilNacionalidade" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Naturalidade</label>
+                                <input type="text" id="perfilNaturalidade" readonly>
+                            </div>
+                        </div>
+
+                        <h3>Documentos de Identificação</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Bilhete de Identidade</label>
+                                <input type="text" id="perfilBI" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>NIF</label>
+                                <input type="text" id="perfilNIF" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Número do Passaporte</label>
+                                <input type="text" id="perfilPassaporte" readonly>
+                            </div>
+                        </div>
+
+                        <h3>Contactos</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="tel" id="perfilTelefone" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="perfilEmail" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone Alternativo</label>
+                                <input type="tel" id="perfilTelefoneAlt" readonly>
+                            </div>
+                        </div>
+
+                        <h3>Morada</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Província</label>
+                                <input type="text" id="perfilProvincia" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Município</label>
+                                <input type="text" id="perfilMunicipio" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Bairro</label>
+                                <input type="text" id="perfilBairro" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Rua</label>
+                                <input type="text" id="perfilRua" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Casa Nº</label>
+                                <input type="text" id="perfilCasa" readonly>
+                            </div>
+                        </div>
+
+                        <h3>Informação de Emergência</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nome do Contacto de Emergência</label>
+                                <input type="text" id="perfilEmergenciaNome" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Parentesco</label>
+                                <input type="text" id="perfilEmergenciaParentesco" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone de Emergência</label>
+                                <input type="tel" id="perfilEmergenciaTelefone" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Informação Académica Section -->
+                <section id="informacao-academica" class="content-section">
+                    <h2>Informação Académica</h2>
+                    
+                    <div class="academic-info">
+                        <h3>Dados Académicos</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Número de Estudante</span>
+                                <span class="info-value" id="academicoNumero">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Curso</span>
+                                <span class="info-value" id="academicoCurso">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Turma</span>
+                                <span class="info-value" id="academicoTurma">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Ano Lectivo</span>
+                                <span class="info-value" id="academicoAnoLectivo">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Semestre</span>
+                                <span class="info-value" id="academicoSemestre">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Turno</span>
+                                <span class="info-value" id="academicoTurno">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Data de Ingresso</span>
+                                <span class="info-value" id="academicoIngresso">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Estado</span>
+                                <span class="info-value" id="academicoEstado">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Histórico Académico</h3>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ano Lectivo</th>
+                                        <th>Curso</th>
+                                        <th>Turma</th>
+                                        <th>Média Final</th>
+                                        <th>Estado</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historicoAcademico">
+                                    <!-- Histórico será carregado aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Progresso Académico</h3>
+                        <div id="progressoAcademico">
+                            <!-- Progresso será carregado aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Horário Section -->
+                <section id="horario" class="content-section">
+                    <h2>Horário Semanal</h2>
+                    
+                    <div class="info-card">
+                        <h3>Horário Actual</h3>
+                        <div id="horarioSemanal">
+                            <!-- Horário será carregado aqui -->
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Horário de Hoje</h3>
+                        <div id="horarioHoje">
+                            <!-- Horário de hoje será carregado aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Avaliações Section -->
+                <section id="avaliacoes" class="content-section">
+                    <h2>Avaliações e Notas</h2>
+                    
+                    <div class="info-card">
+                        <h3>Notas do Semestre Actual</h3>
+                        <div id="notasSemestreAtual">
+                            <!-- Notas serão carregadas aqui -->
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Histórico de Avaliações</h3>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Disciplina</th>
+                                        <th>Tipo de Avaliação</th>
+                                        <th>Data</th>
+                                        <th>Nota</th>
+                                        <th>Peso</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historicoAvaliacoes">
+                                    <!-- Histórico será carregado aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Disciplinas Section -->
+                <section id="disciplinas" class="content-section">
+                    <h2>Disciplinas Inscritas</h2>
+                    
+                    <div class="info-card">
+                        <h3>Disciplinas do Semestre Actual</h3>
+                        <div id="disciplinasAtuais">
+                            <!-- Disciplinas serão carregadas aqui -->
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Plano Curricular</h3>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ano</th>
+                                        <th>Semestre</th>
+                                        <th>Disciplina</th>
+                                        <th>Código</th>
+                                        <th>Créditos</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="planoCurricular">
+                                    <!-- Plano curricular será carregado aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Financeiro Section -->
+                <section id="financeiro" class="content-section">
+                    <h2>Informação Financeira</h2>
+                    
+                    <div class="info-card">
+                        <h3>Resumo Financeiro</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Próxima Mensalidade</span>
+                                <span class="info-value" id="financeiroProxima">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Valor em Dívida</span>
+                                <span class="info-value" id="financeiroDivida">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Último Pagamento</span>
+                                <span class="info-value" id="financeiroUltimoPagamento">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status Financeiro</span>
+                                <span class="info-value" id="financeiroStatus">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Histórico de Pagamentos</h3>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Valor</th>
+                                        <th>Método</th>
+                                        <th>Comprovativo</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historicoPagamentos">
+                                    <!-- Histórico será carregado aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Documentos Section -->
+                <section id="documentos" class="content-section">
+                    <h2>Documentos Académicos</h2>
+                    
+                    <div class="quick-actions">
+                        <div class="quick-action-card" onclick="studentSystem.emitirDocumento('declaracao')">
+                            <i class="fas fa-file-contract"></i>
+                            <h3>Declaração de Matrícula</h3>
+                            <p>Emitir declaração</p>
+                        </div>
+                        <div class="quick-action-card" onclick="studentSystem.emitirDocumento('historico')">
+                            <i class="fas fa-history"></i>
+                            <h3>Histórico Académico</h3>
+                            <p>Emitir histórico</p>
+                        </div>
+                        <div class="quick-action-card" onclick="studentSystem.emitirDocumento('certificado')">
+                            <i class="fas fa-award"></i>
+                            <h3>Certificado de Notas</h3>
+                            <p>Emitir certificado</p>
+                        </div>
+                        <div class="quick-action-card" onclick="studentSystem.emitirDocumento('horario')">
+                            <i class="fas fa-calendar"></i>
+                            <h3>Horário Escolar</h3>
+                            <p>Emitir horário</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Meus Documentos</h3>
+                        <div id="listaDocumentos">
+                            <!-- Documentos serão listados aqui -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Configurações Section -->
+                <section id="configuracoes" class="content-section">
+                    <h2>Configurações da Conta</h2>
+                    
+                    <div class="form-container">
+                        <h3>Alterar Password</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="currentPassword">Password Actual</label>
+                                <input type="password" id="currentPassword">
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">Nova Password</label>
+                                <input type="password" id="newPassword">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirmar Nova Password</label>
+                                <input type="password" id="confirmPassword">
+                            </div>
+                        </div>
+                        <button onclick="studentSystem.alterarPassword()" class="action-btn primary">Alterar Password</button>
+                    </div>
+
+                    <div class="form-container">
+                        <h3>Preferências de Notificação</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="notificacaoEmail" checked>
+                                Receber notificações por email
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="notificacaoSMS" checked>
+                                Receber notificações por SMS
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="notificacaoAvisos" checked>
+                                Receber avisos importantes
+                            </label>
+                        </div>
+                        <button onclick="studentSystem.salvarPreferencias()" class="action-btn primary">Salvar Preferências</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        class StudentSystem {
+            constructor() {
+                this.currentUser = null;
+                this.studentData = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadStudentData();
+                this.loadDashboard();
+            }
+
+            checkAuth() {
+                const savedUser = localStorage.getItem('ipmc_currentUser');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.currentUser = JSON.parse(savedUser);
+                if (this.currentUser.profile !== 'estudante') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.updateUserInterface();
+            }
+
+            updateUserInterface() {
+                document.getElementById('userName').textContent = 
+                    this.currentUser.personalInfo?.nome || 'Estudante';
+                document.getElementById('userNumber').textContent = 
+                    `Nº: ${this.currentUser.numeroEstudante || '--'}`;
+                
+                const userAvatar = document.getElementById('userAvatar');
+                const name = this.currentUser.personalInfo?.nome || 'E';
+                userAvatar.textContent = name.charAt(0).toUpperCase();
+            }
+
+            setupEventListeners() {
+                // Navegação
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showSection(link.dataset.section);
+                    });
+                });
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                // Carregar dados específicos da seção
+                switch(sectionId) {
+                    case 'meu-perfil':
+                        this.loadPerfilCompleto();
+                        break;
+                    case 'informacao-academica':
+                        this.loadInformacaoAcademica();
+                        break;
+                    case 'horario':
+                        this.loadHorario();
+                        break;
+                    case 'avaliacoes':
+                        this.loadAvaliacoes();
+                        break;
+                    case 'disciplinas':
+                        this.loadDisciplinas();
+                        break;
+                    case 'financeiro':
+                        this.loadFinanceiro();
+                        break;
+                    case 'documentos':
+                        this.loadDocumentos();
+                        break;
+                }
+            }
+
+            loadStudentData() {
+                // Carregar dados completos do estudante
+                const estudantes = JSON.parse(localStorage.getItem('ipmc_estudantes') || '[]');
+                this.studentData = estudantes.find(e => e.userId === this.currentUser.id) || {};
+                
+                // Combinar dados do usuário com dados do estudante
+                this.studentData = {
+                    ...this.currentUser,
+                    ...this.studentData,
+                    personalInfo: {
+                        ...this.currentUser.personalInfo,
+                        ...(this.studentData.personalInfo || {})
+                    }
+                };
+            }
+
+            loadDashboard() {
+                this.loadStats();
+                this.loadProximasAtividades();
+                this.loadAvisosComunicados();
+            }
+
+            loadStats() {
+                // Carregar estatísticas do dashboard
+                const notas = this.getNotasEstudante();
+                const disciplinas = this.getDisciplinasEstudante();
+                const faltas = this.getFaltasMes();
+                const proximoVencimento = this.getProximoVencimento();
+
+                const media = notas.length > 0 ? 
+                    (notas.reduce((sum, nota) => sum + nota.valor, 0) / notas.length).toFixed(1) : '--';
+
+                document.getElementById('mediaAtual').textContent = media;
+                document.getElementById('totalDisciplinas').textContent = disciplinas.length;
+                document.getElementById('faltasMes').textContent = faltas;
+                document.getElementById('proximoVencimento').textContent = proximoVencimento;
+            }
+
+            loadPerfilCompleto() {
+                if (!this.studentData) return;
+
+                const profile = this.studentData.personalInfo || {};
+                
+                // Avatar
+                document.getElementById('profileAvatar').textContent = 
+                    (profile.nome || 'E').charAt(0).toUpperCase();
+                
+                // Cabeçalho
+                document.getElementById('profileName').textContent = profile.nome || '--';
+                document.getElementById('profileNumber').textContent = 
+                    `Número: ${this.studentData.numeroEstudante || '--'}`;
+                document.getElementById('profileCourse').textContent = 
+                    `Curso: ${this.getCursoNome(this.studentData.cursoId)}`;
+                document.getElementById('profileStatus').textContent = 
+                    `Status: ${this.studentData.status || '--'}`;
+
+                // Dados pessoais
+                document.getElementById('perfilNome').value = profile.nome || '';
+                document.getElementById('perfilNascimento').value = profile.dataNascimento || '';
+                document.getElementById('perfilGenero').value = profile.genero || '';
+                document.getElementById('perfilEstadoCivil').value = profile.estadoCivil || '';
+                document.getElementById('perfilNacionalidade').value = profile.nacionalidade || '';
+                document.getElementById('perfilNaturalidade').value = profile.naturalidade || '';
+
+                // Documentos
+                document.getElementById('perfilBI').value = profile.bilheteIdentidade || '';
+                document.getElementById('perfilNIF').value = profile.nif || '';
+                document.getElementById('perfilPassaporte').value = profile.passaporte || '';
+
+                // Contactos
+                document.getElementById('perfilTelefone').value = profile.telefone || '';
+                document.getElementById('perfilEmail').value = this.studentData.email || '';
+                document.getElementById('perfilTelefoneAlt').value = profile.telefoneAlternativo || '';
+
+                // Morada
+                document.getElementById('perfilProvincia').value = profile.provincia || '';
+                document.getElementById('perfilMunicipio').value = profile.municipio || '';
+                document.getElementById('perfilBairro').value = profile.bairro || '';
+                document.getElementById('perfilRua').value = profile.rua || '';
+                document.getElementById('perfilCasa').value = profile.numeroCasa || '';
+
+                // Emergência
+                document.getElementById('perfilEmergenciaNome').value = profile.contactoEmergencia || '';
+                document.getElementById('perfilEmergenciaParentesco').value = profile.parentescoEmergencia || '';
+                document.getElementById('perfilEmergenciaTelefone').value = profile.telefoneEmergencia || '';
+            }
+
+            loadInformacaoAcademica() {
+                if (!this.studentData) return;
+
+                document.getElementById('academicoNumero').textContent = this.studentData.numeroEstudante || '--';
+                document.getElementById('academicoCurso').textContent = this.getCursoNome(this.studentData.cursoId);
+                document.getElementById('academicoTurma').textContent = this.getTurmaNome(this.studentData.turmaId);
+                document.getElementById('academicoAnoLectivo').textContent = '2024';
+                document.getElementById('academicoSemestre').textContent = this.studentData.semestre || '--';
+                document.getElementById('academicoTurno').textContent = this.studentData.turno || '--';
+                document.getElementById('academicoIngresso').textContent = this.studentData.dataIngresso || '--';
+                document.getElementById('academicoEstado').textContent = this.studentData.status || '--';
+
+                this.loadHistoricoAcademico();
+            }
+
+            loadHistoricoAcademico() {
+                const historico = this.getHistoricoAcademico();
+                const container = document.getElementById('historicoAcademico');
+                
+                if (historico.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="no-data">Nenhum histórico académico encontrado</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = historico.map(item => `
+                    <tr>
+                        <td>${item.anoLectivo}</td>
+                        <td>${item.curso}</td>
+                        <td>${item.turma}</td>
+                        <td>${item.media}</td>
+                        <td><span class="status-badge status-${item.estado === 'Aprovado' ? 'active' : 'warning'}">${item.estado}</span></td>
+                        <td>${item.observacoes || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+
+            loadHorario() {
+                const horario = this.getHorarioEstudante();
+                const hoje = new Date().getDay();
+                
+                this.loadHorarioSemanal(horario);
+                this.loadHorarioHoje(horario, hoje);
+            }
+
+            loadHorarioSemanal(horario) {
+                const container = document.getElementById('horarioSemanal');
+                const dias = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+                
+                let html = '';
+                dias.forEach((dia, index) => {
+                    const aulasDia = horario.filter(aula => aula.dia === index + 1);
+                    
+                    html += `
+                        <div class="schedule-day">
+                            <h4>${dia}</h4>
+                            ${aulasDia.length > 0 ? aulasDia.map(aula => `
+                                <div class="schedule-item">
+                                    <div class="schedule-time">${aula.horaInicio} - ${aula.horaFim}</div>
+                                    <div class="schedule-details">
+                                        <h5>${aula.disciplina}</h5>
+                                        <p>${aula.professor}</p>
+                                    </div>
+                                    <div class="schedule-location">${aula.sala}</div>
+                                </div>
+                            `).join('') : '<p class="no-data">Sem aulas</p>'}
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            }
+
+            loadHorarioHoje(horario, dia) {
+                const container = document.getElementById('horarioHoje');
+                const aulasHoje = horario.filter(aula => aula.dia === dia);
+                
+                if (aulasHoje.length === 0) {
+                    container.innerHTML = '<p class="no-data">Sem aulas para hoje</p>';
+                    return;
+                }
+
+                container.innerHTML = aulasHoje.map(aula => `
+                    <div class="schedule-item">
+                        <div class="schedule-time">${aula.horaInicio} - ${aula.horaFim}</div>
+                        <div class="schedule-details">
+                            <h5>${aula.disciplina}</h5>
+                            <p>${aula.professor}</p>
+                        </div>
+                        <div class="schedule-location">${aula.sala}</div>
+                    </div>
+                `).join('');
+            }
+
+            loadAvaliacoes() {
+                const notas = this.getNotasEstudante();
+                this.loadNotasSemestre(notas);
+                this.loadHistoricoAvaliacoes(notas);
+            }
+
+            loadNotasSemestre(notas) {
+                const container = document.getElementById('notasSemestreAtual');
+                
+                if (notas.length === 0) {
+                    container.innerHTML = '<p class="no-data">Nenhuma nota disponível</p>';
+                    return;
+                }
+
+                container.innerHTML = notas.map(nota => {
+                    const classeNota = nota.valor >= 16 ? 'grade-high' : 
+                                     nota.valor >= 10 ? 'grade-medium' : 'grade-low';
+                    
+                    return `
+                        <div class="grade-item">
+                            <div class="grade-info">
+                                <h4>${nota.disciplina}</h4>
+                                <p>${nota.tipo} - ${nota.data}</p>
+                            </div>
+                            <div class="grade-value ${classeNota}">
+                                ${nota.valor}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            loadHistoricoAvaliacoes(notas) {
+                const container = document.getElementById('historicoAvaliacoes');
+                container.innerHTML = notas.map(nota => `
+                    <tr>
+                        <td>${nota.disciplina}</td>
+                        <td>${nota.tipo}</td>
+                        <td>${nota.data}</td>
+                        <td>${nota.valor}</td>
+                        <td>${nota.peso}%</td>
+                        <td><span class="status-badge status-${nota.valor >= 10 ? 'success' : 'warning'}">
+                            ${nota.valor >= 10 ? 'Aprovado' : 'Reprovado'}
+                        </span></td>
+                    </tr>
+                `).join('');
+            }
+
+            loadDisciplinas() {
+                const disciplinas = this.getDisciplinasEstudante();
+                this.loadDisciplinasAtuais(disciplinas);
+                this.loadPlanoCurricular(disciplinas);
+            }
+
+            loadDisciplinasAtuais(disciplinas) {
+                const container = document.getElementById('disciplinasAtuais');
+                
+                container.innerHTML = disciplinas.map(disciplina => `
+                    <div class="info-item">
+                        <span class="info-label">${disciplina.nome}</span>
+                        <span class="info-value">${disciplina.codigo} - ${disciplina.creditos} créditos</span>
+                        <div style="margin-top: 0.5rem;">
+                            <span class="status-badge status-${disciplina.estado === 'Inscrito' ? 'active' : 'inactive'}">
+                                ${disciplina.estado}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            loadPlanoCurricular(disciplinas) {
+                const container = document.getElementById('planoCurricular');
+                container.innerHTML = disciplinas.map(disciplina => `
+                    <tr>
+                        <td>${disciplina.ano}</td>
+                        <td>${disciplina.semestre}</td>
+                        <td>${disciplina.nome}</td>
+                        <td>${disciplina.codigo}</td>
+                        <td>${disciplina.creditos}</td>
+                        <td><span class="status-badge status-${disciplina.estado === 'Inscrito' ? 'active' : 'inactive'}">
+                            ${disciplina.estado}
+                        </span></td>
+                    </tr>
+                `).join('');
+            }
+
+            loadFinanceiro() {
+                const financeiro = this.getDadosFinanceiros();
+                
+                document.getElementById('financeiroProxima').textContent = financeiro.proximaMensalidade;
+                document.getElementById('financeiroDivida').textContent = financeiro.valorDivida;
+                document.getElementById('financeiroUltimoPagamento').textContent = financeiro.ultimoPagamento;
+                document.getElementById('financeiroStatus').textContent = financeiro.status;
+
+                this.loadHistoricoPagamentos();
+            }
+
+            loadHistoricoPagamentos() {
+                const pagamentos = this.getPagamentosEstudante();
+                const container = document.getElementById('historicoPagamentos');
+                
+                container.innerHTML = pagamentos.map(pagamento => `
+                    <tr>
+                        <td>${pagamento.data}</td>
+                        <td>${pagamento.descricao}</td>
+                        <td>${this.formatarMoeda(pagamento.valor)}</td>
+                        <td>${pagamento.metodo}</td>
+                        <td>
+                            <button onclick="studentSystem.emitirComprovativo(${pagamento.id})" class="action-btn primary">
+                                <i class="fas fa-print"></i> Comprovativo
+                            </button>
+                        </td>
+                        <td><span class="status-badge status-${pagamento.status}">${pagamento.status}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            loadDocumentos() {
+                const documentos = this.getDocumentosEstudante();
+                const container = document.getElementById('listaDocumentos');
+                
+                container.innerHTML = documentos.map(doc => `
+                    <div class="info-item">
+                        <span class="info-label">${doc.tipo}</span>
+                        <span class="info-value">Emitido em: ${doc.dataEmissao}</span>
+                        <div style="margin-top: 0.5rem;">
+                            <button onclick="studentSystem.downloadDocumento(${doc.id})" class="action-btn primary">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button onclick="studentSystem.visualizarDocumento(${doc.id})" class="action-btn warning">
+                                <i class="fas fa-eye"></i> Visualizar
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            loadProximasAtividades() {
+                const atividades = this.getProximasAtividades();
+                const container = document.getElementById('proximasAtividades');
+                
+                container.innerHTML = atividades.map(atividade => `
+                    <div class="schedule-item">
+                        <div class="schedule-time">${atividade.data}</div>
+                        <div class="schedule-details">
+                            <h5>${atividade.titulo}</h5>
+                            <p>${atividade.descricao}</p>
+                        </div>
+                        <div class="schedule-location">${atividade.local}</div>
+                    </div>
+                `).join('');
+            }
+
+            loadAvisosComunicados() {
+                const avisos = this.getAvisosComunicados();
+                const container = document.getElementById('avisosComunicados');
+                
+                container.innerHTML = avisos.map(aviso => `
+                    <div class="info-item">
+                        <span class="info-label">${aviso.data} - ${aviso.tipo}</span>
+                        <span class="info-value">${aviso.titulo}</span>
+                        <p style="margin-top: 0.5rem; color: #666;">${aviso.mensagem}</p>
+                    </div>
+                `).join('');
+            }
+
+            // Métodos auxiliares para obter dados
+            getCursoNome(cursoId) {
+                const cursos = JSON.parse(localStorage.getItem('ipmc_cursos') || '[]');
+                const curso = cursos.find(c => c.id === cursoId);
+                return curso ? curso.nome : 'Curso não encontrado';
+            }
+
+            getTurmaNome(turmaId) {
+                const turmas = JSON.parse(localStorage.getItem('ipmc_turmas') || '[]');
+                const turma = turmas.find(t => t.id === turmaId);
+                return turma ? turma.nome : 'Turma não encontrada';
+            }
+
+            getNotasEstudante() {
+                // Simular notas do estudante
+                return [
+                    { disciplina: 'Matemática', tipo: 'Teste', data: '2024-01-15', valor: 16, peso: 30 },
+                    { disciplina: 'Português', tipo: 'Trabalho', data: '2024-01-20', valor: 14, peso: 20 },
+                    { disciplina: 'Programação', tipo: 'Projeto', data: '2024-01-25', valor: 18, peso: 50 }
+                ];
+            }
+
+            getDisciplinasEstudante() {
+                // Simular disciplinas do estudante
+                return [
+                    { nome: 'Matemática Discreta', codigo: 'MAT101', creditos: 6, ano: 1, semestre: 1, estado: 'Inscrito' },
+                    { nome: 'Programação I', codigo: 'PROG101', creditos: 6, ano: 1, semestre: 1, estado: 'Inscrito' },
+                    { nome: 'Português Técnico', codigo: 'PT101', creditos: 4, ano: 1, semestre: 1, estado: 'Inscrito' }
+                ];
+            }
+
+            getFaltasMes() {
+                return 2; // Simular faltas
+            }
+
+            getProximoVencimento() {
+                return '10/02/2024'; // Simular vencimento
+            }
+
+            getHistoricoAcademico() {
+                // Simular histórico académico
+                return [
+                    { anoLectivo: '2023', curso: 'Informática', turma: 'A', media: 15, estado: 'Aprovado', observacoes: '-' }
+                ];
+            }
+
+            getHorarioEstudante() {
+                // Simular horário
+                return [
+                    { dia: 1, horaInicio: '08:00', horaFim: '09:30', disciplina: 'Matemática', professor: 'Dr. Silva', sala: 'Sala 101' },
+                    { dia: 1, horaInicio: '10:00', horaFim: '11:30', disciplina: 'Programação', professor: 'Eng. Santos', sala: 'Lab. 201' },
+                    { dia: 3, horaInicio: '14:00', horaFim: '15:30', disciplina: 'Português', professor: 'Prof. Oliveira', sala: 'Sala 102' }
+                ];
+            }
+
+            getDadosFinanceiros() {
+                return {
+                    proximaMensalidade: '10/02/2024',
+                    valorDivida: '25.000 KZ',
+                    ultimoPagamento: '15/01/2024',
+                    status: 'Regular'
+                };
+            }
+
+            getPagamentosEstudante() {
+                return [
+                    { id: 1, data: '2024-01-15', descricao: 'Mensalidade Janeiro', valor: 25000, metodo: 'Transferência', status: 'Pago' },
+                    { id: 2, data: '2023-12-10', descricao: 'Mensalidade Dezembro', valor: 25000, metodo: 'Multicaixa', status: 'Pago' }
+                ];
+            }
+
+            getDocumentosEstudante() {
+                return [
+                    { id: 1, tipo: 'Declaração de Matrícula', dataEmissao: '2024-01-10' },
+                    { id: 2, tipo: 'Certificado de Notas', dataEmissao: '2023-12-20' }
+                ];
+            }
+
+            getProximasAtividades() {
+                return [
+                    { data: '2024-02-05', titulo: 'Teste de Matemática', descricao: 'Teste do 1º semestre', local: 'Sala 101' },
+                    { data: '2024-02-12', titulo: 'Entrega de Projeto', descricao: 'Projeto de Programação', local: 'Lab. 201' }
+                ];
+            }
+
+            getAvisosComunicados() {
+                return [
+                    { data: '2024-01-20', tipo: 'Aviso', titulo: 'Início das Aulas', mensagem: 'As aulas do 2º semestre iniciam no dia 05 de Fevereiro.' },
+                    { data: '2024-01-15', tipo: 'Comunicado', titulo: 'Pagamento de Mensalidades', mensagem: 'Lembramos que o prazo para pagamento das mensalidades é até dia 10 de cada mês.' }
+                ];
+            }
+
+            // Métodos de ação
+            emitirDocumento(tipo) {
+                alert(`Emitindo ${tipo}... Em produção, isto geraria um PDF.`);
+            }
+
+            emitirComprovativo(pagamentoId) {
+                alert(`Emitindo comprovativo do pagamento ${pagamentoId}...`);
+            }
+
+            downloadDocumento(documentoId) {
+                alert(`Fazendo download do documento ${documentoId}...`);
+            }
+
+            visualizarDocumento(documentoId) {
+                alert(`Visualizando documento ${documentoId}...`);
+            }
+
+            alterarPassword() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    alert('Por favor, preencha todos os campos.');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    alert('As passwords não coincidem.');
+                    return;
+                }
+
+                alert('Password alterada com sucesso!');
+                // Em produção, aqui faria a atualização na base de dados
+            }
+
+            salvarPreferencias() {
+                alert('Preferências salvas com sucesso!');
+            }
+
+            formatarMoeda(valor) {
+                return new Intl.NumberFormat('pt-AO', {
+                    style: 'currency',
+                    currency: 'AOA'
+                }).format(valor);
+            }
+        }
+
+        // Função global para logout
+        function logout() {
+            localStorage.removeItem('ipmc_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar sistema do estudante
+        const studentSystem = new StudentSystem();
+    </script>
+</body>
+</html>

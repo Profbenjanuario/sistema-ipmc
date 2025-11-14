@@ -1,3 +1,4 @@
+// assets/js/auth.js
 class AuthSystem {
     constructor() {
         this.init();
@@ -20,8 +21,11 @@ class AuthSystem {
     }
 
     initDatabase() {
+        console.log('🔄 Inicializando base de dados...');
+        
         // Inicializar dados padrão se não existirem
         if (!localStorage.getItem('ipmc_users')) {
+            console.log('📦 Criando usuários padrão...');
             const defaultUsers = [
                 {
                     id: 1,
@@ -128,7 +132,18 @@ class AuthSystem {
                 }
             ];
             localStorage.setItem('ipmc_users', JSON.stringify(defaultUsers));
-            console.log('✅ Base de dados inicializada com usuários padrão!');
+            console.log('✅ Base de dados inicializada com', defaultUsers.length, 'usuários!');
+            
+            // Log dos usuários criados para debug
+            defaultUsers.forEach(user => {
+                console.log(`👤 ${user.username} / ${user.password} (${user.profile})`);
+            });
+        } else {
+            const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+            console.log('📊 Usuários existentes:', users.length);
+            users.forEach(user => {
+                console.log(`👤 ${user.username} / ${user.password} (${user.profile})`);
+            });
         }
 
         // Inicializar outras coleções se não existirem
@@ -139,12 +154,14 @@ class AuthSystem {
             'ipmc_avaliacoes',
             'ipmc_estagios',
             'ipmc_mensalidades',
-            'ipmc_pagamentos'
+            'ipmc_pagamentos',
+            'ipmc_atividades'
         ];
 
         collections.forEach(collection => {
             if (!localStorage.getItem(collection)) {
                 localStorage.setItem(collection, JSON.stringify([]));
+                console.log(`📁 Coleção ${collection} inicializada`);
             }
         });
     }
@@ -152,22 +169,45 @@ class AuthSystem {
     checkExistingAuth() {
         const currentUser = localStorage.getItem('ipmc_currentUser');
         if (currentUser) {
-            const user = JSON.parse(currentUser);
-            this.redirectToDashboard(user.profile);
+            try {
+                const user = JSON.parse(currentUser);
+                console.log('🔐 Usuário já autenticado:', user.username);
+                this.redirectToDashboard(user.profile);
+            } catch (e) {
+                console.error('❌ Erro ao verificar autenticação:', e);
+                localStorage.removeItem('ipmc_currentUser');
+            }
         }
     }
 
     handleLogin() {
-        const username = document.getElementById('username').value;
+        const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
 
+        console.log('🔐 Tentativa de login:', { username, password });
+
+        // Validação básica
+        if (!username || !password) {
+            this.showError('Por favor, preencha todos os campos.');
+            return;
+        }
+
         const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+        console.log('📊 Total de usuários no sistema:', users.length);
+
+        // Debug: mostrar todos os usuários
+        users.forEach(user => {
+            console.log(`🔍 Verificando: ${user.username} (${user.password})`);
+        });
+
         const user = users.find(u => 
             u.username === username && 
             u.password === password
         );
 
         if (user) {
+            console.log('✅ Login bem-sucedido para:', user.username);
+            
             // Verificar se o usuário está ativo
             if (user.status !== 'ativo') {
                 this.showError('Esta conta está desativada. Contacte o administrador.');
@@ -186,8 +226,19 @@ class AuthSystem {
             });
             
         } else {
+            console.log('❌ Credenciais inválidas para:', username);
             this.showError('Credenciais inválidas. Verifique username e password.');
+            
+            // Sugerir usuários disponíveis
+            this.sugerirUsuarios(users);
         }
+    }
+
+    sugerirUsuarios(users) {
+        console.log('💡 Usuários disponíveis:');
+        users.forEach(user => {
+            console.log(`   👤 ${user.username} / ${user.password} (${user.profile})`);
+        });
     }
 
     animateLoginSuccess(callback) {
@@ -206,26 +257,24 @@ class AuthSystem {
     }
 
     createConfettiEffect() {
-        // Efeito visual simples de confete
         const colors = ['#667eea', '#764ba2', '#28a745', '#ffc107', '#dc3545'];
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 15; i++) {
             setTimeout(() => {
                 const confetti = document.createElement('div');
                 confetti.style.position = 'fixed';
-                confetti.style.width = '10px';
-                confetti.style.height = '10px';
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
                 confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
                 confetti.style.borderRadius = '50%';
                 confetti.style.left = Math.random() * 100 + 'vw';
                 confetti.style.top = '-10px';
                 confetti.style.zIndex = '9999';
-                confetti.style.animation = `confettiFall ${Math.random() * 2 + 1}s linear forwards`;
+                confetti.style.animation = `confettiFall ${Math.random() * 1.5 + 0.5}s linear forwards`;
                 
                 document.body.appendChild(confetti);
                 
-                // Remover após animação
                 setTimeout(() => confetti.remove(), 2000);
-            }, i * 100);
+            }, i * 80);
         }
 
         // Adicionar estilo de animação se não existir
@@ -253,30 +302,29 @@ class AuthSystem {
             descricao: `${user.personalInfo.nome} fez login no sistema`
         });
         localStorage.setItem('ipmc_atividades', JSON.stringify(atividades));
+        console.log('📝 Atividade de login registrada');
     }
 
     redirectToDashboard(profile) {
-        switch(profile) {
-            case 'secretaria':
-                window.location.href = 'secretaria.html';
-                break;
-            case 'pedagogico':
-                window.location.href = 'pedagogico.html';
-                break;
-            case 'director':
-                window.location.href = 'director.html';
-                break;
-            case 'tutor':
-                window.location.href = 'tutor.html';
-                break;
-            case 'estudante':
-                window.location.href = 'estudante.html';
-                break;
-            case 'financeiro':
-                window.location.href = 'financeiro.html';
-                break;
-            default:
-                window.location.href = 'index.html';
+        console.log('🔄 Redirecionando para:', profile);
+        
+        const dashboardMap = {
+            'secretaria': 'secretaria.html',
+            'pedagogico': 'pedagogico.html',
+            'director': 'director.html',
+            'tutor': 'tutor.html',
+            'estudante': 'estudante.html',
+            'financeiro': 'financeiro.html'
+        };
+
+        const dashboardPage = dashboardMap[profile];
+        if (dashboardPage) {
+            setTimeout(() => {
+                window.location.href = dashboardPage;
+            }, 800);
+        } else {
+            console.error('❌ Perfil não reconhecido:', profile);
+            this.showError('Perfil não configurado. Contacte o administrador.');
         }
     }
 
@@ -286,7 +334,10 @@ class AuthSystem {
             errorDiv = document.createElement('div');
             errorDiv.id = 'errorMessage';
             errorDiv.className = 'error-message';
-            document.querySelector('.login-container').insertBefore(errorDiv, document.getElementById('loginForm'));
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.parentNode.insertBefore(errorDiv, loginForm);
+            }
         }
         
         errorDiv.textContent = message;
@@ -294,10 +345,12 @@ class AuthSystem {
         
         // Efeito de shake no formulário
         const loginContainer = document.querySelector('.login-container');
-        loginContainer.style.animation = 'shake 0.5s ease-in-out';
-        setTimeout(() => {
-            loginContainer.style.animation = '';
-        }, 500);
+        if (loginContainer) {
+            loginContainer.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => {
+                loginContainer.style.animation = '';
+            }, 500);
+        }
 
         // Adicionar estilo de shake se não existir
         if (!document.querySelector('#shake-style')) {
@@ -306,50 +359,36 @@ class AuthSystem {
             style.textContent = `
                 @keyframes shake {
                     0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(-10px); }
-                    75% { transform: translateX(10px); }
+                    25% { transform: translateX(-8px); }
+                    75% { transform: translateX(8px); }
                 }
             `;
             document.head.appendChild(style);
         }
         
         setTimeout(() => {
-            errorDiv.style.display = 'none';
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
         }, 5000);
     }
 
-    // Método para recuperação de password (futura implementação)
-    iniciarRecuperacaoPassword() {
-        const username = prompt('Digite seu username para recuperação de password:');
-        if (username) {
-            const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
-            const user = users.find(u => u.username === username);
-            
-            if (user) {
-                alert(`Password para ${username}: ${user.password}\n\nPor questões de segurança, altere sua password após o login.`);
-            } else {
-                alert('Username não encontrado!');
-            }
+    // Método para forçar reinicialização do banco de dados
+    reinicializarBancoDados() {
+        if (confirm('⚠️ Tem certeza que deseja reinicializar o banco de dados? Todos os dados serão perdidos!')) {
+            localStorage.removeItem('ipmc_users');
+            localStorage.removeItem('ipmc_currentUser');
+            this.initDatabase();
+            alert('✅ Banco de dados reinicializado com sucesso!');
+            window.location.reload();
         }
-    }
-
-    // Método para alterar password (futura implementação)
-    alterarPassword(userId, novaPassword) {
-        const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
-        const userIndex = users.findIndex(u => u.id === userId);
-        
-        if (userIndex !== -1) {
-            users[userIndex].password = novaPassword;
-            users[userIndex].dataAlteracaoPassword = new Date().toISOString();
-            localStorage.setItem('ipmc_users', JSON.stringify(users));
-            return true;
-        }
-        return false;
     }
 }
 
 // Função global para logout
 function logout() {
+    console.log('🚪 Efetuando logout...');
+    
     // Registrar atividade de logout
     const currentUser = JSON.parse(localStorage.getItem('ipmc_currentUser') || '{}');
     const atividades = JSON.parse(localStorage.getItem('ipmc_atividades') || '[]');
@@ -364,12 +403,16 @@ function logout() {
     });
     localStorage.setItem('ipmc_atividades', JSON.stringify(atividades));
     
-    // Remover usuário atual e redirecionar
+    // Remover usuário atual
     localStorage.removeItem('ipmc_currentUser');
     
+    console.log('✅ Logout realizado com sucesso');
+    
     // Efeito de transição
-    document.body.style.opacity = '0.7';
-    document.body.style.transition = 'opacity 0.3s ease';
+    if (document.body) {
+        document.body.style.opacity = '0.7';
+        document.body.style.transition = 'opacity 0.3s ease';
+    }
     
     setTimeout(() => {
         window.location.href = 'index.html';
@@ -378,14 +421,29 @@ function logout() {
 
 // Função global para recuperação de password
 function recuperarPassword() {
-    const authSystem = new AuthSystem();
-    authSystem.iniciarRecuperacaoPassword();
+    const username = prompt('Digite seu username para recuperação de password:');
+    if (username) {
+        const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+        const user = users.find(u => u.username === username);
+        
+        if (user) {
+            alert(`🔐 Password para ${username}: ${user.password}\n\n💡 Por questões de segurança, altere sua password após o login.`);
+        } else {
+            alert('❌ Username não encontrado!');
+        }
+    }
 }
 
 // Função para demonstrar usuários disponíveis
 function mostrarUsuariosDemo() {
     const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
-    let mensagem = '👥 USUÁRIOS DISPONÍVEIS PARA TESTE:\n\n';
+    
+    if (users.length === 0) {
+        alert('❌ Nenhum usuário encontrado no sistema!');
+        return;
+    }
+    
+    let mensagem = '👥 USUÁRIOS DISPONÍVEIS:\n\n';
     
     users.forEach(user => {
         mensagem += `👤 ${user.personalInfo.nome}\n`;
@@ -396,45 +454,41 @@ function mostrarUsuariosDemo() {
         mensagem += '   ─────────────────────\n';
     });
     
-    mensagem += '\n💡 DICA: Use o usuário "Benjanuario" para acessar como Director!';
+    mensagem += '\n💡 DICA: Use "Benjanuario" para acessar como Director!';
     
     alert(mensagem);
 }
 
+// Função para debug do sistema
+function debugSistema() {
+    console.clear();
+    console.log('🐛 DEBUG DO SISTEMA IPMC');
+    console.log('========================');
+    
+    const users = JSON.parse(localStorage.getItem('ipmc_users') || '[]');
+    console.log('👥 Usuários:', users);
+    
+    const currentUser = localStorage.getItem('ipmc_currentUser');
+    console.log('🔐 Usuário atual:', currentUser ? JSON.parse(currentUser) : 'Nenhum');
+    
+    console.log('📊 LocalStorage keys:', Object.keys(localStorage));
+    
+    alert('✅ Debug realizado! Verifique o console (F12) para detalhes.');
+}
+
 // Inicializar sistema de autenticação quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🏫 Instituto Politécnico Makhetele - Caia');
+    console.log('🔐 Sistema de Autenticação Inicializando...');
+    
     const authSystem = new AuthSystem();
     
-    // Adicionar link de recuperação de password se não existir
-    if (!document.getElementById('recovery-link')) {
-        const recoveryLink = document.createElement('div');
-        recoveryLink.id = 'recovery-link';
-        recoveryLink.innerHTML = `
-            <div style="text-align: center; margin-top: 1rem;">
-                <a href="#" onclick="recuperarPassword()" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">
-                    🔓 Esqueci minha password
-                </a>
-                <br>
-                <a href="#" onclick="mostrarUsuariosDemo()" style="color: #28a745; text-decoration: none; font-size: 0.9rem; margin-top: 0.5rem; display: inline-block;">
-                    👥 Ver usuários de teste
-                </a>
-            </div>
-        `;
-        
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.parentNode.insertBefore(recoveryLink, loginForm.nextSibling);
-        }
-    }
+    // Adicionar botão de debug no console
+    window.authSystem = authSystem;
     
-    // Adicionar usuário atual no console para debug
-    const currentUser = localStorage.getItem('ipmc_currentUser');
-    if (currentUser) {
-        console.log('✅ Usuário atual:', JSON.parse(currentUser));
-    }
-    
-    console.log('🔐 Sistema de autenticação inicializado!');
-    console.log('💡 Use "Benjanuario" / "Ben12" para login como Director');
+    console.log('✅ Sistema de autenticação pronto!');
+    console.log('💡 Use: Benjanuario / Ben12 para login como Director');
+    console.log('🐛 Use: debugSistema() para diagnosticar problemas');
 });
 
 // Prevenir acesso direto às páginas sem autenticação
@@ -442,6 +496,7 @@ function verificarAutenticacao(perfilRequerido = null) {
     const currentUser = localStorage.getItem('ipmc_currentUser');
     
     if (!currentUser) {
+        console.log('❌ Acesso negado: usuário não autenticado');
         window.location.href = 'index.html';
         return false;
     }
@@ -449,10 +504,12 @@ function verificarAutenticacao(perfilRequerido = null) {
     const user = JSON.parse(currentUser);
     
     if (perfilRequerido && user.profile !== perfilRequerido) {
-        alert(`Acesso negado! Esta página é apenas para ${perfilRequerido}.`);
+        console.log(`❌ Acesso negado: perfil ${user.profile} não tem acesso a ${perfilRequerido}`);
+        alert(`⛔ Acesso negado! Esta página é apenas para ${perfilRequerido}.`);
         window.location.href = 'index.html';
         return false;
     }
     
+    console.log(`✅ Acesso permitido para: ${user.username} (${user.profile})`);
     return true;
-    }
+}
